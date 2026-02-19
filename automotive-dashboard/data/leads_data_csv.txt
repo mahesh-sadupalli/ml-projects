@@ -1,0 +1,202 @@
+Date,Lead_ID,Model_Interest,Region,Source,Status,Converted_Sale_ID
+2024-01-15,L001,911 Carrera,Germany,Website,Won,S001
+2024-01-15,L002,Cayenne,Germany,Referral,Lost,
+2024-01-15,L003,Macan,Germany,Advertisement,Pipeline,
+2024-01-16,L004,Cayenne,USA,Website,Won,S002
+2024-01-16,L005,911 Carrera,USA,Social Media,Lost,
+2024-01-16,L006,Panamera,USA,Referral,Pipeline,
+2024-01-17,L007,Macan,China,Website,Won,S003
+2024-01-17,L008,Taycan,China,Advertisement,Lost,
+2024-01-17,L009,718 Boxster,China,Referral,Pipeline,
+2024-01-18,L010,Panamera,UK,Website,Won,S004
+2024-01-18,L011,911 Carrera,UK,Social Media,Lost,
+2024-01-18,L012,Cayenne,UK,Advertisement,Pipeline,
+2024-01-19,L013,Taycan,Germany,Website,Won,S005
+2024-01-19,L014,Macan,Germany,Referral,Lost,
+2024-01-19,L015,718 Boxster,Germany,Social Media,Pipeline,
+2024-01-20,L016,718 Boxster,USA,Website,Won,S006
+2024-01-20,L017,911 Carrera,USA,Advertisement,Lost,
+2024-01-20,L018,Cayenne,USA,Referral,Pipeline,
+2024-01-21,L019,911 Carrera,Germany,Website,Won,S007
+2024-01-21,L020,Panamera,Germany,Social Media,Lost,
+2024-01-21,L021,Taycan,Germany,Advertisement,Pipeline,
+2024-01-22,L022,Cayenne,China,Website,Won,S008
+2024-01-22,L023,Macan,China,Referral,Lost,
+2024-01-22,L024,911 Carrera,China,Social Media,Pipeline,
+2024-01-23,L025,Macan,UK,Website,Won,S009
+2024-01-23,L026,Taycan,UK,Advertisement,Lost,
+2024-01-23,L027,718 Boxster,UK,Referral,Pipeline,
+2024-01-24,L028,911 Carrera,USA,Website,Won,S010
+2024-01-24,L029,Panamera,USA,Social Media,Lost,
+2024-01-24,L030,Cayenne,USA,Advertisement,Pipeline,
+2024-01-25,L031,Panamera,Germany,Website,Won,S011
+2024-01-25,L032,Taycan,Germany,Referral,Lost,
+2024-01-25,L033,Macan,Germany,Social Media,Pipeline,
+2024-01-26,L034,Taycan,China,Website,Won,S012
+2024-01-26,L035,911 Carrera,China,Advertisement,Lost,
+2024-01-26,L036,718 Boxster,China,Referral,Pipeline,
+2024-01-27,L037,Cayenne,USA,Website,Won,S013
+2024-01-27,L038,Macan,USA,Social Media,Lost,
+2024-01-27,L039,Panamera,USA,Advertisement,Pipeline,
+2024-01-28,L040,Macan,Germany,Website,Won,S014
+2024-01-28,L041,911 Carrera,Germany,Referral,Lost,
+2024-01-28,L042,Taycan,Germany,Social Media,Pipeline,
+2024-01-29,L043,911 Carrera,UK,Website,Won,S015
+2024-01-29,L044,Cayenne,UK,Advertisement,Lost,
+2024-01-29,L045,Panamera,UK,Referral,Pipeline,
+2024-01-30,L046,718 Boxster,USA,Website,Won,S016
+2024-01-30,L047,Taycan,USA,Social Media,Lost,
+2024-01-30,L048,Macan,USA,Advertisement,Pipeline,
+2024-02-01,L049,Cayenne,Germany,Website,Won,S017
+2024-02-01,L050,911 Carrera,Germany,Referral,Lost,
+2024-02-01,L051,Panamera,Germany,Social Media,Pipeline,
+2024-02-02,L052,Panamera,China,Website,Won,S018
+2024-02-02,L053,Taycan,China,Advertisement,Lost,
+2024-02-02,L054,Macan,China,Referral,Pipeline,
+2024-02-03,L055,Taycan,USA,Website,Won,S019
+2024-02-03,L056,911 Carrera,USA,Social Media,Lost,
+2024-02-03,L057,718 Boxster,USA,Advertisement,Pipeline,
+2024-02-04,L058,Macan,UK,Website,Won,S020
+2024-02-04,L059,Cayenne,UK,Referral,Lost,
+2024-02-04,L060,Panamera,UK,Social Media,Pipeline,
+2024-02-05,L061,911 Carrera,Germany,Website,Won,S021
+2024-02-05,L062,Taycan,Germany,Advertisement,Lost,
+2024-02-05,L063,Macan,Germany,Referral,Pipeline,
+2024-02-06,L064,Cayenne,USA,Website,Won,S022
+2024-02-06,L065,Panamera,USA,Social Media,Lost,
+2024-02-06,L066,911 Carrera,USA,Advertisement,Pipeline,
+2024-02-07,L067,718 Boxster,China,Website,Won,S023
+2024-02-07,L068,Taycan,China,Referral,Lost,
+2024-02-07,L069,Macan,China,Social Media,Pipeline,
+2024-02-08,L070,Panamera,Germany,Website,Won,S024
+2024-02-08,L071,911 Carrera,Germany,Advertisement,Lost,
+2024-02-08,L072,Cayenne,Germany,Referral,Pipeline,
+2024-02-09,L073,Taycan,UK,Website,Won,S025
+2024-02-09,L074,Macan,UK,Social Media,Lost,
+2024-02-09,L075,718 Boxster,UK,Advertisement,Pipeline,
+2024-02-10,L076,Macan,USA,Website,Won,S026
+2024-02-10,L077,Panamera,USA,Referral,Lost,
+2024-02-10,L078,Taycan,USA,Social Media,Pipeline,
+2024-02-11,L079,911 Carrera,China,Website,Won,S027
+2024-02-11,L080,Cayenne,China,Advertisement,Lost,
+2024-02-11,L081,718 Boxster,China,Referral,Pipeline,
+2024-02-12,L082,Cayenne,Germany,Website,Won,S028
+2024-02-12,L083,Macan,Germany,Social Media,Lost,
+2024-02-12,L084,Panamera,Germany,Advertisement,Pipeline,
+2024-02-13,L085,Panamera,USA,Website,Won,S029
+2024-02-13,L086,911 Carrera,USA,Referral,Lost,
+2024-02-13,L087,Taycan,USA,Social Media,Pipeline,
+2024-02-14,L088,Taycan,UK,Website,Won,S030
+2024-02-14,L089,Macan,UK,Advertisement,Lost,
+2024-02-14,L090,Cayenne,UK,Referral,Pipeline,
+2024-02-15,L091,Macan,Germany,Website,Won,S031
+2024-02-15,L092,718 Boxster,Germany,Social Media,Lost,
+2024-02-15,L093,911 Carrera,Germany,Advertisement,Pipeline,
+2024-02-16,L094,718 Boxster,China,Website,Won,S032
+2024-02-16,L095,Panamera,China,Referral,Lost,
+2024-02-16,L096,Taycan,China,Social Media,Pipeline,
+2024-02-17,L097,911 Carrera,USA,Website,Won,S033
+2024-02-17,L098,Cayenne,USA,Advertisement,Lost,
+2024-02-17,L099,Macan,USA,Referral,Pipeline,
+2024-02-18,L100,Cayenne,UK,Website,Won,S034
+2024-02-18,L101,Panamera,UK,Social Media,Lost,
+2024-02-18,L102,911 Carrera,UK,Advertisement,Pipeline,
+2024-02-19,L103,Panamera,Germany,Website,Won,S035
+2024-02-19,L104,Taycan,Germany,Referral,Lost,
+2024-02-19,L105,Macan,Germany,Social Media,Pipeline,
+2024-02-20,L106,Taycan,China,Website,Won,S036
+2024-02-20,L107,718 Boxster,China,Advertisement,Lost,
+2024-02-20,L108,911 Carrera,China,Referral,Pipeline,
+2024-02-21,L109,Macan,USA,Website,Won,S037
+2024-02-21,L110,Cayenne,USA,Social Media,Lost,
+2024-02-21,L111,Panamera,USA,Advertisement,Pipeline,
+2024-02-22,L112,911 Carrera,Germany,Website,Won,S038
+2024-02-22,L113,Taycan,Germany,Referral,Lost,
+2024-02-22,L114,718 Boxster,Germany,Social Media,Pipeline,
+2024-02-23,L115,Cayenne,UK,Website,Won,S039
+2024-02-23,L116,Macan,UK,Advertisement,Lost,
+2024-02-23,L117,Panamera,UK,Referral,Pipeline,
+2024-02-24,L118,718 Boxster,USA,Website,Won,S040
+2024-02-24,L119,911 Carrera,USA,Social Media,Lost,
+2024-02-24,L120,Taycan,USA,Advertisement,Pipeline,
+2024-02-25,L121,Panamera,China,Website,Won,S041
+2024-02-25,L122,Macan,China,Referral,Lost,
+2024-02-25,L123,Cayenne,China,Social Media,Pipeline,
+2024-02-26,L124,Taycan,Germany,Website,Won,S042
+2024-02-26,L125,911 Carrera,Germany,Advertisement,Lost,
+2024-02-26,L126,718 Boxster,Germany,Referral,Pipeline,
+2024-02-27,L127,Macan,UK,Website,Won,S043
+2024-02-27,L128,Cayenne,UK,Social Media,Lost,
+2024-02-27,L129,Panamera,UK,Advertisement,Pipeline,
+2024-02-28,L130,911 Carrera,USA,Website,Won,S044
+2024-02-28,L131,Taycan,USA,Referral,Lost,
+2024-02-28,L132,Macan,USA,Social Media,Pipeline,
+2024-03-01,L133,Cayenne,Germany,Website,Won,S045
+2024-03-01,L134,Panamera,Germany,Advertisement,Lost,
+2024-03-01,L135,911 Carrera,Germany,Referral,Pipeline,
+2024-03-02,L136,Panamera,China,Website,Won,S046
+2024-03-02,L137,Taycan,China,Social Media,Lost,
+2024-03-02,L138,718 Boxster,China,Advertisement,Pipeline,
+2024-03-03,L139,Taycan,USA,Website,Won,S047
+2024-03-03,L140,Macan,USA,Referral,Lost,
+2024-03-03,L141,Cayenne,USA,Social Media,Pipeline,
+2024-03-04,L142,Macan,UK,Website,Won,S048
+2024-03-04,L143,911 Carrera,UK,Advertisement,Lost,
+2024-03-04,L144,Panamera,UK,Referral,Pipeline,
+2024-03-05,L145,718 Boxster,Germany,Website,Won,S049
+2024-03-05,L146,Taycan,Germany,Social Media,Lost,
+2024-03-05,L147,Cayenne,Germany,Advertisement,Pipeline,
+2024-03-06,L148,911 Carrera,China,Website,Won,S050
+2024-03-06,L149,Macan,China,Referral,Lost,
+2024-03-06,L150,Panamera,China,Social Media,Pipeline,
+2024-03-07,L151,Cayenne,USA,Website,Won,S051
+2024-03-07,L152,718 Boxster,USA,Advertisement,Lost,
+2024-03-07,L153,Taycan,USA,Referral,Pipeline,
+2024-03-08,L154,Panamera,UK,Website,Won,S052
+2024-03-08,L155,Macan,UK,Social Media,Lost,
+2024-03-08,L156,911 Carrera,UK,Advertisement,Pipeline,
+2024-03-09,L157,Taycan,Germany,Website,Won,S053
+2024-03-09,L158,Cayenne,Germany,Referral,Lost,
+2024-03-09,L159,718 Boxster,Germany,Social Media,Pipeline,
+2024-03-10,L160,Macan,China,Website,Won,S054
+2024-03-10,L161,Panamera,China,Advertisement,Lost,
+2024-03-10,L162,911 Carrera,China,Referral,Pipeline,
+2024-03-11,L163,911 Carrera,USA,Website,Won,S055
+2024-03-11,L164,Taycan,USA,Social Media,Lost,
+2024-03-11,L165,Macan,USA,Advertisement,Pipeline,
+2024-03-12,L166,Cayenne,Germany,Website,Won,S056
+2024-03-12,L167,Panamera,Germany,Referral,Lost,
+2024-03-12,L168,718 Boxster,Germany,Social Media,Pipeline,
+2024-03-13,L169,718 Boxster,UK,Website,Won,S057
+2024-03-13,L170,911 Carrera,UK,Advertisement,Lost,
+2024-03-13,L171,Taycan,UK,Referral,Pipeline,
+2024-03-14,L172,Panamera,China,Website,Won,S058
+2024-03-14,L173,Cayenne,China,Social Media,Lost,
+2024-03-14,L174,Macan,China,Advertisement,Pipeline,
+2024-03-15,L175,Taycan,USA,Website,Won,S059
+2024-03-15,L176,718 Boxster,USA,Referral,Lost,
+2024-03-15,L177,911 Carrera,USA,Social Media,Pipeline,
+2024-03-16,L178,Macan,Germany,Website,Won,S060
+2024-03-16,L179,Cayenne,Germany,Advertisement,Lost,
+2024-03-16,L180,Panamera,Germany,Referral,Pipeline,
+2024-04-01,L181,911 Carrera,Germany,Website,Won,S061
+2024-04-01,L182,Taycan,Germany,Social Media,Lost,
+2024-04-01,L183,Macan,Germany,Advertisement,Pipeline,
+2024-04-02,L184,Cayenne,USA,Website,Won,S062
+2024-04-02,L185,Panamera,USA,Referral,Lost,
+2024-04-02,L186,718 Boxster,USA,Social Media,Pipeline,
+2024-04-03,L187,Macan,China,Website,Won,S063
+2024-04-03,L188,911 Carrera,China,Advertisement,Lost,
+2024-04-03,L189,Taycan,China,Referral,Pipeline,
+2024-04-04,L190,Panamera,UK,Website,Won,S064
+2024-04-04,L191,Cayenne,UK,Social Media,Lost,
+2024-04-04,L192,718 Boxster,UK,Advertisement,Pipeline,
+2024-04-05,L193,Taycan,Germany,Website,Won,S065
+2024-04-05,L194,Macan,Germany,Referral,Lost,
+2024-04-05,L195,911 Carrera,Germany,Social Media,Pipeline,
+2024-04-06,L196,718 Boxster,USA,Website,Won,S066
+2024-04-06,L197,Panamera,USA,Advertisement,Lost,
+2024-04-06,L198,Cayenne,USA,Referral,Pipeline,
+2024-04-07,L199,911 Carrera,China,Website,Won,S067
+2024-04-07,L200,Taycan,China,Social Media,Lost,
+2024-04-07,L201,Macan,China,Advertisement,Pipeline

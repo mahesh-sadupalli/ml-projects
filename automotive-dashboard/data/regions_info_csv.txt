@@ -1,0 +1,6 @@
+Region,Country_Code,Timezone,Sales_Target_Monthly,Market_Size,Currency,Population_Millions
+Germany,DE,CET,2500000,Large,EUR,83.2
+USA,US,EST,3000000,Large,USD,331.9
+China,CN,CST,2000000,Large,CNY,1412.0
+UK,GB,GMT,1500000,Medium,GBP,67.8
+France,FR,CET,1200000,Medium,EUR,68.0

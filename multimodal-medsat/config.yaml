@@ -1,0 +1,251 @@
+# ============================================
+# MedSat Project Configuration
+# ============================================
+
+project:
+  name: "MedSat Health Prediction"
+  version: "1.0.0"
+  author: "Your Name"
+  description: "Multimodal ML for predicting medical prescriptions using satellite, environmental, and sociodemographic data"
+
+# ============================================
+# Data Paths
+# ============================================
+paths:
+  data:
+    raw: "data/raw/"
+    processed: "data/processed/"
+    shapefiles: "data/shapefiles/"
+  
+  models: "models/saved_models/"
+  
+  results:
+    figures: "results/figures/"
+    metrics: "results/metrics/"
+    reports: "results/reports/"
+
+# ============================================
+# Data Configuration
+# ============================================
+data:
+  # Years to analyze
+  years: [2019, 2020]
+  
+  # Spatial unit
+  spatial_unit: "LSOA"  # Lower Layer Super Output Area
+  
+  # Feature counts
+  n_sociodemographic: 111
+  n_environmental: 43
+  n_image_bands: 11
+  n_seasons: 4
+  
+  # Sentinel-2 bands
+  sentinel_bands:
+    - B01  # Aerosols (443 nm)
+    - B02  # Blue (490 nm)
+    - B03  # Green (560 nm)
+    - B04  # Red (665 nm)
+    - B05  # Vegetation red edge (705 nm)
+    - B06  # NIR (842 nm)
+    - B07  # NIR (783 nm)
+    - B08  # NIR (842 nm)
+    - B8A  # Vegetation red edge (865 nm)
+    - B11  # SWIR (1610 nm)
+    - B12  # SWIR (2190 nm)
+  
+  # Prescription outcomes
+  outcomes:
+    metabolic:
+      - diabetes
+      - hypertension
+    mental:
+      - depression
+      - anxiety
+    respiratory:
+      - asthma
+    other:
+      - opioids
+      - total
+  
+  # Missing data handling
+  missing:
+    max_missing_rate: 0.15
+    imputation_method: "median"  # Options: mean, median, knn, mice
+
+# ============================================
+# Preprocessing Configuration
+# ============================================
+preprocessing:
+  # Outlier detection
+  outlier:
+    method: "iqr"  # Options: iqr, zscore, isolation_forest
+    iqr_multiplier: 1.5
+    zscore_threshold: 3.0
+  
+  # Feature scaling
+  scaling:
+    method: "standard"  # Options: standard, minmax, robust
+    apply_to: ["environmental", "sociodemographic", "image"]
+  
+  # Feature engineering
+  feature_engineering:
+    create_interactions: false
+    polynomial_features: false
+    log_transform: ["total"]  # Apply log transform to these outcomes
+
+# ============================================
+# Spatial Configuration
+# ============================================
+spatial:
+  # Spatial cross-validation
+  cv:
+    method: "spatial_blocks"
+    block_size_km: 28
+    n_folds: 5
+    shuffle: true
+    random_state: 42
+  
+  # Spatial weights
+  weights:
+    type: "queen"  # Options: queen, rook, knn, distance
+    k_neighbors: 8
+    distance_threshold_km: 10
+
+# ============================================
+# Model Configuration
+# ============================================
+models:
+  # Random state for reproducibility
+  random_state: 42
+  
+  # Train/validation split
+  validation_split: 0.5  # 50% of test fold used for validation
+  
+  # LightGBM
+  lightgbm:
+    objective: "regression"
+    metric: "rmse"
+    boosting_type: "gbdt"
+    num_iterations: 100
+    learning_rate: 0.1
+    max_depth: -1
+    num_leaves: 31
+    min_data_in_leaf: 20
+    feature_fraction: 0.8
+    bagging_fraction: 0.8
+    bagging_freq: 5
+    early_stopping_rounds: 10
+    verbose: -1
+  
+  # XGBoost (alternative)
+  xgboost:
+    objective: "reg:squarederror"
+    eval_metric: "rmse"
+    max_depth: 6
+    learning_rate: 0.1
+    n_estimators: 100
+    subsample: 0.8
+    colsample_bytree: 0.8
+    early_stopping_rounds: 10
+  
+  # Random Forest (baseline)
+  random_forest:
+    n_estimators: 100
+    max_depth: null
+    min_samples_split: 2
+    min_samples_leaf: 1
+    max_features: "sqrt"
+  
+  # Spatial Lag Model
+  spatial_lag:
+    method: "ml"  # Maximum likelihood
+
+# ============================================
+# Evaluation Metrics
+# ============================================
+evaluation:
+  metrics:
+    - r2_score
+    - rmse
+    - mae
+    - mape
+  
+  # Target R² scores (from paper)
+  target_r2:
+    diabetes: 0.35
+    hypertension: 0.44
+    depression: 0.50
+    anxiety: 0.48
+    asthma: 0.43
+    opioids: 0.60
+    total: 0.31
+
+# ============================================
+# Feature Importance / Explainability
+# ============================================
+explainability:
+  # SHAP configuration
+  shap:
+    n_samples: 1000  # Number of samples for SHAP calculation
+    plot_top_n: 10   # Show top N features in plots
+  
+  # Feature importance methods
+  methods:
+    - shap
+    - permutation
+    - builtin  # Model's built-in feature importance
+
+# ============================================
+# Visualization Configuration
+# ============================================
+visualization:
+  # Figure settings
+  figure:
+    format: "png"  # Options: png, pdf, svg
+    dpi: 300
+    style: "whitegrid"  # Seaborn style
+    context: "paper"  # Options: paper, notebook, talk, poster
+  
+  # Color schemes
+  colors:
+    categorical: "Set2"
+    sequential: "viridis"
+    diverging: "RdBu"
+  
+  # Map settings
+  maps:
+    crs: "EPSG:27700"  # British National Grid
+    background_map: "CartoDB positron"
+    
+# ============================================
+# Logging Configuration
+# ============================================
+logging:
+  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/medsat.log"
+  console: true
+
+# ============================================
+# Computational Resources
+# ============================================
+computation:
+  n_jobs: -1  # Use all available cores (-1)
+  parallel_backend: "loky"  # Options: loky, threading, multiprocessing
+  cache_dir: ".cache/"
+  
+# ============================================
+# Experiment Tracking (Optional)
+# ============================================
+mlflow:
+  tracking_uri: "file:./mlruns"
+  experiment_name: "medsat_predictions"
+  enabled: false
+
+# ============================================
+# API Keys (use environment variables)
+# ============================================
+# Don't store actual keys here - use .env file
+api_keys:
+  google_earth_engine: "${GEE_API_KEY}"

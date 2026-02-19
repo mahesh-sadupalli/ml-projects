@@ -1,0 +1,7 @@
+Model,Category,Base_Price,Launch_Year,Engine_Type,Body_Style,Target_Segment
+911 Carrera,Sports Car,89500,1963,Gasoline,Coupe,Premium
+Cayenne,SUV,72000,2002,Hybrid,SUV,Luxury SUV
+Macan,Compact SUV,58000,2014,Gasoline,Compact SUV,Entry Luxury
+Panamera,Luxury Sedan,95000,2009,Hybrid,Sedan,Executive
+Taycan,Electric Sports Car,103000,2019,Electric,Sedan,Electric Premium
+718 Boxster,Roadster,65000,1996,Gasoline,Convertible,Sports Enthusiast
