@@ -1,8 +1,11 @@
 # ML Projects
 
-A collection of applied machine learning projects spanning healthcare, anomaly detection, and data analytics.
+A collection of applied machine learning projects spanning healthcare, anomaly detection, data analytics, and AI systems.
 
 ## Projects
+
+### [Enterprise Document Intelligence](enterprise-doc-intel/)
+Intelligent document platform combining RAG pipelines, Knowledge Graphs, and Agentic Workflows — built from scratch without LangChain. Ingests enterprise documents (policies, technical docs, reports), builds structured knowledge in Neo4j, and answers complex multi-step questions via a ReAct agent with hybrid vector + graph retrieval. Powered by Ollama (local LLMs), ChromaDB, Neo4j, and FastAPI.
 
 ### [Multimodal MedSat](multimodal-medsat/)
 Multimodal deep learning model for predicting medical prescription prevalence across England. Proposes a two-branch architecture — CNN/ViT for Sentinel-2 satellite imagery (10 spectral bands) and MLP for sociodemographic + environmental tabular data — fused via cross-attention. Built on the MedSat dataset (NeurIPS 2023) covering 33,755 regions and 6 prescription types (diabetes, hypertension, asthma, depression, anxiety, opioids). Satellite image preprocessing pipeline completed.
