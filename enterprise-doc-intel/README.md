@@ -1,85 +1,52 @@
 # Enterprise Document Intelligence
 
-An intelligent document platform that combines **RAG pipelines**, **Knowledge Graphs**, and **Agentic Workflows** to answer complex questions across enterprise documents — built from scratch without LangChain.
+Enterprise Document Intelligence is a local-first AI platform that combines retrieval-augmented generation (RAG), knowledge graphs, and agentic workflows to answer complex questions across internal documents.
+
+## Project Status
+
+**Current stage: Phase I (functional prototype / foundation complete).**
+
+Implemented capabilities:
+- End-to-end ingestion pipeline (load, chunk, embed, store)
+- Hybrid retrieval (vector + graph context)
+- Agent orchestration for multi-step reasoning
+- FastAPI service for ingestion, querying, and graph exploration
+
+Not yet production-ready:
+- Limited automated integration coverage (most integration tests are stubs)
+- No CI/CD, evaluation harness, or monitoring
+- Runtime dependencies (Ollama/Neo4j) assumed to be available locally
 
 ## Architecture
 
-```
-Documents → Loader → Chunker → Embeddings → ChromaDB (vector store)
-                           ↘ LLM Extraction → Neo4j (knowledge graph)
+```text
+Documents -> Loader -> Chunker -> Embeddings -> ChromaDB (vector store)
+                          \-> LLM Extraction -> Neo4j (knowledge graph)
 
-Query → Hybrid Retriever (vector + graph) → Context Builder → LLM Generator → Answer
+Query -> Hybrid Retriever (vector + graph) -> Context Builder -> LLM Generator -> Answer
   or
-Query → Agent Planner → ReAct Loop (tools: search, graph, summarize, compare) → Answer
+Query -> Agent Planner -> ReAct Tool Loop (search, graph, summarize, compare) -> Answer
 ```
 
-### Components
+## Core Modules
 
-| Module | Description |
+| Module | Responsibility |
 |---|---|
-| `src/ingestion/` | Document loading (PDF, Markdown, TXT), chunking (fixed-size, recursive) |
-| `src/embeddings/` | Embedding generation via Ollama (`nomic-embed-text`) |
-| `src/vectorstore/` | ChromaDB wrapper with cosine similarity search |
-| `src/knowledge_graph/` | Neo4j integration, LLM-based entity/relation extraction, Cypher queries |
-| `src/rag/` | Hybrid retriever, context builder with source attribution, LLM generator |
-| `src/agents/` | ReAct agent with query decomposition, tool use, multi-step reasoning |
-| `src/api/` | FastAPI endpoints for ingestion, querying, and graph exploration |
+| `src/ingestion/` | Document loading (PDF, Markdown, TXT) and chunking |
+| `src/embeddings/` | Embedding generation through Ollama (`nomic-embed-text`) |
+| `src/vectorstore/` | ChromaDB persistence and similarity search |
+| `src/knowledge_graph/` | Neo4j client, extraction, and graph queries |
+| `src/rag/` | Retrieval, context construction, and answer generation |
+| `src/agents/` | Query decomposition and multi-step tool orchestration |
+| `src/api/` | FastAPI application and route handlers |
 
-## Tech Stack
+## Technology Stack
 
-- **LLM**: Ollama (Llama 3.2 / Mistral) — runs locally, zero cost
-- **Embeddings**: Ollama (`nomic-embed-text`)
-- **Vector Store**: ChromaDB
-- **Graph Database**: Neo4j (Docker)
-- **API**: FastAPI
-- **Language**: Python 3.11+
-
-## Quick Start
-
-### Prerequisites
 - Python 3.11+
-- Docker
-- [Ollama](https://ollama.ai)
-
-### Setup
-```bash
-# Start Neo4j
-docker compose up -d
-
-# Pull models
-ollama pull llama3.2
-ollama pull nomic-embed-text
-
-# Install dependencies
-pip install -e ".[dev]"
-```
-
-### Run
-```bash
-# Ingest sample documents
-python -m src.ingestion.pipeline
-
-# Start API server
-make serve
-
-# Query (RAG mode)
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"question": "What is the remote work policy?"}'
-
-# Query (Agent mode — multi-step reasoning)
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"question": "Compare the security and leave policies", "mode": "agent"}'
-
-# Explore knowledge graph
-curl http://localhost:8000/graph/entities
-```
-
-### Test
-```bash
-pytest -v
-```
+- FastAPI
+- Ollama (LLM + embeddings)
+- ChromaDB
+- Neo4j
 
 ## API Endpoints
 
@@ -87,12 +54,12 @@ pytest -v
 |---|---|---|
 | `GET` | `/health` | Service health check |
 | `POST` | `/ingest` | Ingest documents from a directory |
-| `POST` | `/query` | Ask a question (mode: `rag` or `agent`) |
-| `GET` | `/graph/entities` | List all knowledge graph entities |
-| `GET` | `/graph/neighbors/{entity}` | Get related entities |
+| `POST` | `/query` | Ask a question (`rag` or `agent`) |
+| `GET` | `/graph/entities` | List entities from the knowledge graph |
+| `GET` | `/graph/neighbors/{entity}` | List neighbors for a given entity |
 
-## Project Roadmap
+## Roadmap
 
-- **Phase I** (current): From-scratch implementation — RAG, KG, agents without frameworks
-- **Phase II**: Enhanced with LangChain/LangGraph for advanced orchestration
-- **Phase III**: Production-grade — evaluation suite, monitoring, CI/CD
+- Phase I (current): from-scratch implementation of RAG + KG + agent workflows
+- Phase II: stronger orchestration and workflow control
+- Phase III: production hardening (evaluation, observability, CI/CD)
