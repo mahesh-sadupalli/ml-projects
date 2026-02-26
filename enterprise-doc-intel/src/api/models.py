@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -17,7 +19,10 @@ class IngestResponse(BaseModel):
 
 class QueryRequest(BaseModel):
     question: str = Field(..., min_length=1, description="The question to ask")
-    mode: str = Field(default="rag", description="Query mode: 'rag' for simple retrieval, 'agent' for multi-step reasoning")
+    mode: Literal["rag", "agent"] = Field(
+        default="rag",
+        description="Query mode: 'rag' for simple retrieval, 'agent' for multi-step reasoning",
+    )
     top_k: int = Field(default=5, ge=1, le=20, description="Number of documents to retrieve")
 
 
@@ -29,9 +34,9 @@ class SourceInfo(BaseModel):
 class QueryResponse(BaseModel):
     answer: str
     mode: str
-    sources: list[SourceInfo] = []
+    sources: list[SourceInfo] = Field(default_factory=list)
     graph_context: str = ""
-    agent_steps: list[dict] = []
+    agent_steps: list[dict] = Field(default_factory=list)
 
 
 class EntityResponse(BaseModel):
@@ -43,6 +48,23 @@ class NeighborResponse(BaseModel):
     name: str
     labels: list[str]
     distance: int
+
+
+class GraphNodeResponse(BaseModel):
+    id: str
+    name: str
+    labels: list[str]
+
+
+class GraphEdgeResponse(BaseModel):
+    source: str
+    target: str
+    type: str
+
+
+class GraphSubgraphResponse(BaseModel):
+    nodes: list[GraphNodeResponse]
+    edges: list[GraphEdgeResponse]
 
 
 class HealthResponse(BaseModel):

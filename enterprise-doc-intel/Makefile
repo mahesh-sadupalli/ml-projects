@@ -1,13 +1,16 @@
-.PHONY: setup serve ingest query clean test
+.PHONY: setup serve ui ingest query clean test
 
 setup:
 	docker compose up -d
 	ollama pull llama3.2
 	ollama pull nomic-embed-text
-	pip install -e ".[dev]"
+	pip install -e ".[dev,ui]"
 
 serve:
 	uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000
+
+ui:
+	streamlit run src/ui/dashboard.py
 
 ingest:
 	python -m src.ingestion.pipeline

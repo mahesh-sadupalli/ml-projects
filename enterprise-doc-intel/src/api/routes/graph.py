@@ -1,8 +1,8 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
-from src.api.models import EntityResponse, NeighborResponse
+from src.api.models import EntityResponse, GraphEdgeResponse, GraphNodeResponse, GraphSubgraphResponse, NeighborResponse
 from src.knowledge_graph.neo4j_client import Neo4jClient
 
 logger = logging.getLogger(__name__)
@@ -35,5 +35,31 @@ def get_neighbors(entity: str, max_hops: int = 2) -> list[NeighborResponse]:
         if not neighbors:
             raise HTTPException(status_code=404, detail=f"Entity '{entity}' not found")
         return [NeighborResponse(name=n["name"], labels=n["labels"], distance=n["distance"]) for n in neighbors]
+    finally:
+        neo4j.close()
+
+
+@router.get("/subgraph/{entity}", response_model=GraphSubgraphResponse)
+def get_subgraph(
+    entity: str,
+    max_hops: int = Query(default=2, ge=1, le=4),
+    node_limit: int = Query(default=200, ge=1, le=1000),
+    edge_limit: int = Query(default=400, ge=1, le=2000),
+) -> GraphSubgraphResponse:
+    neo4j = _get_neo4j()
+    try:
+        result = neo4j.get_subgraph(
+            entity,
+            max_hops=max_hops,
+            node_limit=node_limit,
+            edge_limit=edge_limit,
+        )
+        if not result["nodes"]:
+            raise HTTPException(status_code=404, detail=f"Entity '{entity}' not found")
+
+        return GraphSubgraphResponse(
+            nodes=[GraphNodeResponse(**node) for node in result["nodes"]],
+            edges=[GraphEdgeResponse(**edge) for edge in result["edges"]],
+        )
     finally:
         neo4j.close()

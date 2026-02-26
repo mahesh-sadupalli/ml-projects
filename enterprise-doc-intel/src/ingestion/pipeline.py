@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 
 from src.config import settings
@@ -13,6 +14,13 @@ from src.knowledge_graph.neo4j_client import Neo4jClient
 from src.vectorstore.chroma import ChromaStore
 
 logger = logging.getLogger(__name__)
+
+
+def _build_chunk_id(index: int, text: str, metadata: dict) -> str:
+    source = metadata.get("source", "unknown")
+    chunk_index = metadata.get("chunk_index", index)
+    digest = hashlib.sha1(f"{source}|{chunk_index}|{text}".encode("utf-8")).hexdigest()[:16]
+    return f"chunk_{digest}"
 
 
 def run_pipeline(data_dir: str | None = None) -> dict:
@@ -45,14 +53,17 @@ def run_pipeline(data_dir: str | None = None) -> dict:
     logger.info("Created %d chunks from %d documents", len(all_chunks), len(documents))
 
     # 3. Generate embeddings and store in ChromaDB
-    chroma = ChromaStore()
-    texts = [c.text for c in all_chunks]
-    metadatas = [c.metadata for c in all_chunks]
-    ids = [f"chunk_{i}" for i in range(len(all_chunks))]
+    if all_chunks:
+        chroma = ChromaStore()
+        texts = [c.text for c in all_chunks]
+        metadatas = [c.metadata for c in all_chunks]
+        ids = [_build_chunk_id(i, c.text, c.metadata) for i, c in enumerate(all_chunks)]
 
-    embeddings = get_embeddings(texts)
-    chroma.add(ids=ids, texts=texts, embeddings=embeddings, metadatas=metadatas)
-    logger.info("Stored %d chunks in ChromaDB", len(all_chunks))
+        embeddings = get_embeddings(texts)
+        chroma.add(ids=ids, texts=texts, embeddings=embeddings, metadatas=metadatas)
+        logger.info("Stored %d chunks in ChromaDB", len(all_chunks))
+    else:
+        logger.warning("No non-empty chunks generated; skipping vector storage")
 
     # 4. Extract entities/relations and store in Neo4j
     entity_count = 0

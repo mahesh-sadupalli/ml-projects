@@ -25,6 +25,6 @@ def health_check() -> HealthResponse:
         client.close()
         neo4j_connected = True
     except Exception:
-        pass
+        status = "degraded"
 
     return HealthResponse(status=status, chroma_docs=chroma_docs, neo4j_connected=neo4j_connected)

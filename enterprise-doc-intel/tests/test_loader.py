@@ -1,4 +1,3 @@
-import tempfile
 from pathlib import Path
 
 from src.ingestion.loader import load_directory, load_markdown, load_text
@@ -28,6 +27,14 @@ class TestLoaders:
         assert len(docs) == 2
         names = {Path(d.metadata["source"]).name for d in docs}
         assert names == {"a.md", "b.txt"}
+
+    def test_load_directory_case_insensitive_extensions(self, tmp_path: Path):
+        (tmp_path / "policy.MD").write_text("Policy Document")
+        (tmp_path / "readme.TXT").write_text("Readme Document")
+
+        docs = load_directory(tmp_path)
+        names = {Path(d.metadata["source"]).name for d in docs}
+        assert names == {"policy.MD", "readme.TXT"}
 
     def test_load_empty_directory(self, tmp_path: Path):
         docs = load_directory(tmp_path)

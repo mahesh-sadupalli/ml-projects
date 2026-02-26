@@ -193,6 +193,7 @@ This API layer makes the system consumable by UI clients, workflows, or automati
 | `POST` | `/query` | Ask questions in `rag` or `agent` mode |
 | `GET` | `/graph/entities` | List graph entities |
 | `GET` | `/graph/neighbors/{entity}` | Retrieve related entities by hop distance |
+| `GET` | `/graph/subgraph/{entity}` | Retrieve node-edge subgraph for graph visualization |
 
 ## Technology Stack
 
@@ -202,6 +203,22 @@ This API layer makes the system consumable by UI clients, workflows, or automati
 - ChromaDB
 - Neo4j
 - PyPDF
+- Streamlit (UI dashboard)
+- Plotly + NetworkX (graph visualization)
+
+## Visualization Dashboard
+
+The project now includes an interactive visualization UI:
+- **Ask tab**: run RAG or agent queries and inspect outputs
+- **Graph tab**: render Neo4j entity subgraphs as interactive node-edge networks
+- **System tab**: monitor service health and inspect graph inventory
+
+Run the dashboard after starting the API:
+
+```bash
+make serve
+make ui
+```
 
 ## Quality and Testing Status
 

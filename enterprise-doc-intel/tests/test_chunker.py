@@ -1,3 +1,5 @@
+import pytest
+
 from src.ingestion.chunker import chunk_text, fixed_size_chunks, recursive_chunks
 
 
@@ -64,3 +66,18 @@ class TestChunkText:
             assert False, "Should have raised ValueError"
         except ValueError:
             pass
+
+
+class TestChunkValidation:
+    def test_invalid_chunk_size_raises(self):
+        with pytest.raises(ValueError, match="chunk_size must be > 0"):
+            fixed_size_chunks("text", chunk_size=0, overlap=0)
+
+    def test_negative_overlap_raises(self):
+        with pytest.raises(ValueError, match="overlap must be >= 0"):
+            recursive_chunks("text", chunk_size=10, overlap=-1)
+
+    def test_overlap_is_capped_when_too_large(self):
+        chunks = chunk_text("a" * 50, strategy="fixed", chunk_size=10, overlap=25)
+        assert len(chunks) > 1
+        assert all(len(c.text) <= 10 for c in chunks)

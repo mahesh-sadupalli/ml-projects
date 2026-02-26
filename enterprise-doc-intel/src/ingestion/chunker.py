@@ -11,6 +11,15 @@ class Chunk:
     metadata: dict = field(default_factory=dict)
 
 
+def _normalize_chunk_params(chunk_size: int, overlap: int) -> int:
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be > 0")
+    if overlap < 0:
+        raise ValueError("overlap must be >= 0")
+    # Cap overlap so the chunk cursor always moves forward.
+    return min(overlap, chunk_size - 1)
+
+
 def fixed_size_chunks(
     text: str,
     chunk_size: int = 512,
@@ -18,9 +27,11 @@ def fixed_size_chunks(
     metadata: dict | None = None,
 ) -> list[Chunk]:
     """Split text into fixed-size character chunks with overlap."""
+    overlap = _normalize_chunk_params(chunk_size, overlap)
     metadata = metadata or {}
     chunks: list[Chunk] = []
     start = 0
+    step = chunk_size - overlap
 
     while start < len(text):
         end = start + chunk_size
@@ -34,7 +45,7 @@ def fixed_size_chunks(
                 )
             )
 
-        start += chunk_size - overlap
+        start += step
 
     return chunks
 
@@ -54,6 +65,7 @@ def recursive_chunks(
     Tries the most meaningful separator first (paragraph break), then falls
     back to less meaningful ones (newline, sentence, word).
     """
+    overlap = _normalize_chunk_params(chunk_size, overlap)
     metadata = metadata or {}
     separators = _separators if _separators is not None else list(_SEPARATORS)
 

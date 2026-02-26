@@ -4,8 +4,6 @@ import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from pypdf import PdfReader
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +30,13 @@ def load_markdown(path: Path) -> Document:
 
 
 def load_pdf(path: Path) -> Document:
+    try:
+        from pypdf import PdfReader
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "pypdf is required to load PDF files. Install dependencies with `pip install -e .`."
+        ) from exc
+
     reader = PdfReader(path)
     pages = [page.extract_text() or "" for page in reader.pages]
     return Document(
@@ -53,9 +58,10 @@ def load_directory(directory: str | Path) -> list[Document]:
     documents: list[Document] = []
 
     for path in sorted(directory.rglob("*")):
-        if path.is_file() and path.suffix in LOADERS:
+        suffix = path.suffix.lower()
+        if path.is_file() and suffix in LOADERS:
             try:
-                doc = LOADERS[path.suffix](path)
+                doc = LOADERS[suffix](path)
                 documents.append(doc)
                 logger.info("Loaded %s (%d chars)", path.name, len(doc.content))
             except Exception:
