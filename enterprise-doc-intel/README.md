@@ -1,276 +1,292 @@
+<div align="center">
+
 # Enterprise Document Intelligence
 
-A local-first platform for enterprise knowledge access that combines retrieval-augmented generation (RAG), knowledge graphs, and agentic reasoning. Teams can ask natural-language questions and get grounded, source-cited answers from internal documents — without sending data to external APIs.
+**Ask your documents anything. Get grounded, cited answers.**
 
-Built from first principles with no orchestration frameworks. Every component — chunking, embedding, retrieval, graph extraction, generation, and agent planning — is implemented explicitly so the data flow is transparent and each part can be understood, tested, or replaced independently.
+RAG + Knowledge Graphs + Agentic Reasoning — built from scratch, runs locally.
 
-## Table of Contents
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?logo=python&logoColor=white)](#prerequisites)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](#api-reference)
+[![Ollama](https://img.shields.io/badge/Ollama-local_LLM-000000)](#prerequisites)
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-vector_store-FF6F00)](#how-it-works)
+[![Neo4j](https://img.shields.io/badge/Neo4j-knowledge_graph-4581C3?logo=neo4j&logoColor=white)](#how-it-works)
 
-- [Why This Exists](#why-this-exists)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Ingestion Pipeline](#ingestion-pipeline)
-- [Query Modes](#query-modes)
-- [API Reference](#api-reference)
-- [Dashboard UI](#dashboard-ui)
-- [Project Structure](#project-structure)
-- [How Each Module Works](#how-each-module-works)
-- [Testing](#testing)
-- [Sample Data](#sample-data)
-- [Roadmap](#roadmap)
+---
 
-## Why This Exists
+*Your documents are scattered across policies, reports, and technical notes.*
+*Keyword search doesn't understand what you mean.*
+*Relationships between teams, systems, and policies live in people's heads.*
+*Complex questions need research, not just a top-5 list.*
 
-Enterprise documents are spread across policies, reports, technical notes, and operational manuals. Existing search tools fall short in three ways:
+**This project fixes all three.**
 
-1. **Keyword search misses semantic intent.** A search for "time off" won't find a document titled "leave policy" unless the exact words match.
-2. **Relationships between entities are implicit.** The connection between a team, the systems it owns, and the policies that govern it lives in people's heads, not in a searchable structure.
-3. **Complex questions need multi-step reasoning.** "Compare our data security policy with the remote work policy on device requirements" can't be answered by returning the top-5 most similar chunks.
+</div>
 
-This project addresses all three by combining semantic vector retrieval, a structured knowledge graph, and an agent that can plan and execute multi-step research workflows.
+---
 
-## Architecture
+## What It Does
+
+Drop in your enterprise documents. The system reads them, understands them, connects them, and answers questions about them — with citations.
 
 ```
-Ingestion path:
-                                    ┌──────────────┐
-  Documents ──► Loader ──► Chunker ─┤              ├──► Embeddings ──► ChromaDB
-      (.txt, .md, .pdf)             │              │
-                                    └──────┬───────┘
-                                           │
-                                    LLM Extraction ──► Neo4j (Knowledge Graph)
-
-Query path (RAG mode):
-  User Question ──► Embed Query ──► Vector Search (ChromaDB)  ──┐
-                                                                 ├──► Context Builder ──► LLM ──► Answer
-                 ──► Entity Match ──► Graph Lookup (Neo4j)   ──┘
-
-Query path (Agent mode):
-  User Question ──► Planner (LLM decomposes into steps)
-                       │
-                       ▼
-                 Tool Execution Loop
-                 (search, summarize, compare, graph query)
-                       │
-                       ▼
-                 Synthesizer (LLM combines all observations) ──► Answer
+"What is our policy on remote device encryption?"           → RAG mode: instant cited answer
+"Compare data security and remote work policies on VPNs"   → Agent mode: multi-step research
 ```
 
-Every external dependency (Neo4j, Ollama) degrades gracefully. If Neo4j is down, queries still work using vector-only retrieval. The system logs a warning and continues.
+> **Zero external APIs.** Everything runs on your machine — Ollama for LLM inference, ChromaDB for vectors, Neo4j for the knowledge graph. Your data never leaves your network.
 
-## Prerequisites
+---
 
-| Dependency | Purpose | Install |
-|---|---|---|
-| **Python 3.11+** | Runtime | [python.org](https://www.python.org/downloads/) |
-| **Ollama** | Local LLM and embedding inference | [ollama.com](https://ollama.com/) |
-| **Docker** | Runs Neo4j (knowledge graph) | [docker.com](https://www.docker.com/) |
+## How It Works
 
-Ollama models used:
-- `llama3.2` — generation and entity extraction
-- `nomic-embed-text` — embedding (768-dimensional vectors)
+### The Big Picture
+
+```mermaid
+graph LR
+    subgraph Ingest["<b>Ingestion</b>"]
+        A["Documents<br/>.txt .md .pdf"] --> B["Loader"]
+        B --> C["Chunker"]
+        C --> D["Embeddings"]
+        C --> E["Entity Extractor"]
+    end
+
+    subgraph Store["<b>Storage</b>"]
+        D --> F[("ChromaDB<br/>Vector Store")]
+        E --> G[("Neo4j<br/>Knowledge Graph")]
+    end
+
+    subgraph Query["<b>Query</b>"]
+        H["User Question"] --> I{"Mode?"}
+        I -->|RAG| J["Hybrid Retrieval"]
+        I -->|Agent| K["Plan → Execute → Synthesize"]
+        J --> L["LLM Generation"]
+        K --> L
+        F -.-> J
+        G -.-> J
+        F -.-> K
+        G -.-> K
+    end
+
+    L --> M["Cited Answer"]
+
+    style Ingest fill:#f0f4ff,stroke:#3b82f6
+    style Store fill:#f0fdf4,stroke:#22c55e
+    style Query fill:#fefce8,stroke:#eab308
+    style M fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+```
+
+### Two Ways to Ask
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+#### RAG Mode
+*Fast, single-pass answers*
+
+```
+Question → Embed → Search → Enrich → Generate → Answer
+```
+
+1. Converts your question to a vector
+2. Finds the most relevant chunks in ChromaDB
+3. Pulls related entities from the knowledge graph
+4. Assembles context with source labels
+5. LLM generates a cited answer
+
+**Best for:** Direct questions with clear answers in your docs.
+
+</td>
+<td width="50%" valign="top">
+
+#### Agent Mode
+*Multi-step reasoning*
+
+```
+Question → Plan → [Tool → Observe]... → Synthesize → Answer
+```
+
+1. LLM breaks the question into research steps
+2. Executes each step with the right tool
+3. Collects all observations
+4. Synthesizes a comprehensive answer
+
+**Best for:** Comparisons, cross-document analysis, complex queries.
+
+</td>
+</tr>
+</table>
+
+### The Agent's Toolbox
+
+When running in agent mode, the system has four tools at its disposal:
+
+| Tool | What it does |
+|:---|:---|
+| `search_documents` | Hybrid vector + graph search across all ingested content |
+| `query_knowledge_graph` | Traverse entity relationships in Neo4j (up to 2 hops) |
+| `summarize` | Condense long passages via the LLM |
+| `compare_documents` | Retrieve and group documents side-by-side for comparison |
+
+---
 
 ## Quick Start
 
-### 1. Clone and install
+> **Prerequisites:** [Python 3.11+](https://www.python.org/downloads/) &#8226; [Ollama](https://ollama.com/) &#8226; [Docker](https://www.docker.com/)
 
-```bash
-git clone <repo-url>
-cd enterprise-doc-intel
-```
-
-The `make setup` command handles everything — starts Neo4j via Docker, pulls Ollama models, and installs the Python package with all dependencies:
+### One command setup
 
 ```bash
 make setup
 ```
 
-Or do each step manually:
+This starts Neo4j via Docker, pulls the Ollama models (`llama3.2` + `nomic-embed-text`), and installs the Python package.
+
+<details>
+<summary><b>Or do it step by step</b></summary>
 
 ```bash
-docker compose up -d               # Start Neo4j (port 7474 for browser, 7687 for Bolt)
-ollama pull llama3.2                # Pull generation model
-ollama pull nomic-embed-text        # Pull embedding model
-pip install -e ".[dev,ui]"          # Install package with dev and UI extras
+docker compose up -d               # Start Neo4j (browser: 7474, bolt: 7687)
+ollama pull llama3.2                # Generation model
+ollama pull nomic-embed-text        # Embedding model (768d vectors)
+pip install -e ".[dev,ui]"          # Install with dev + UI extras
 ```
 
-### 2. Ingest documents
+</details>
 
-Place your documents in `data/sample_docs/` (or any directory), then run:
+### Ingest, serve, ask
 
 ```bash
-make ingest
+make ingest    # Load docs → chunk → embed → store vectors + extract graph
+make serve     # Start API at http://localhost:8000
+make query     # Interactive prompt → sends question → pretty-prints response
 ```
 
-This loads all `.txt`, `.md`, and `.pdf` files, chunks them, generates embeddings, stores vectors in ChromaDB, and extracts entities/relationships into Neo4j.
+### Try it with curl
 
-### 3. Start the API
-
-```bash
-make serve
-```
-
-The API starts at `http://localhost:8000`. Interactive docs are available at `http://localhost:8000/docs` (Swagger UI).
-
-### 4. Ask a question
-
-Using the Makefile shortcut:
+<details>
+<summary><b>RAG mode</b> — single-pass retrieval + generation</summary>
 
 ```bash
-make query
-# Prompts for a question, sends it to the API, and pretty-prints the response
-```
-
-Using curl directly:
-
-```bash
-# RAG mode (single-pass retrieval + generation)
 curl -s -X POST http://localhost:8000/query \
   -H "Content-Type: application/json" \
-  -d '{"question": "What is the data security policy?", "mode": "rag", "top_k": 5}' | python -m json.tool
-
-# Agent mode (multi-step reasoning)
-curl -s -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"question": "Compare the remote work policy with the data security policy on device requirements", "mode": "agent"}' | python -m json.tool
+  -d '{"question": "What is the data security policy?", "mode": "rag", "top_k": 5}' \
+  | python -m json.tool
 ```
 
-### 5. Launch the dashboard (optional)
+</details>
+
+<details>
+<summary><b>Agent mode</b> — multi-step reasoning</summary>
 
 ```bash
-make ui
+curl -s -X POST http://localhost:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Compare the remote work policy with the data security policy on device requirements", "mode": "agent"}' \
+  | python -m json.tool
 ```
 
-Opens a Streamlit dashboard at `http://localhost:8501` with tabs for querying, graph exploration, and system health.
+</details>
 
-## Configuration
+### Launch the dashboard
 
-All settings are managed through environment variables or a `.env` file. The configuration is defined in `src/config.py` using Pydantic Settings.
-
-| Variable | Default | Description |
-|---|---|---|
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API endpoint |
-| `OLLAMA_MODEL` | `llama3.2` | Model for generation and entity extraction |
-| `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Model for embedding generation |
-| `NEO4J_URI` | `bolt://localhost:7687` | Neo4j Bolt connection URI |
-| `NEO4J_USER` | `neo4j` | Neo4j username |
-| `NEO4J_PASSWORD` | `password` | Neo4j password |
-| `CHROMA_PERSIST_DIR` | `./chroma_data` | Directory for ChromaDB persistent storage |
-| `CHROMA_COLLECTION` | `enterprise_docs` | ChromaDB collection name |
-| `CHUNK_SIZE` | `512` | Target chunk size in characters |
-| `CHUNK_OVERLAP` | `64` | Overlap between consecutive chunks in characters |
-| `DATA_DIR` | `./data/sample_docs` | Default directory for document ingestion |
-
-Example `.env` file:
-
-```env
-OLLAMA_MODEL=llama3.2
-NEO4J_PASSWORD=my_secure_password
-CHUNK_SIZE=1024
-CHUNK_OVERLAP=128
+```bash
+make ui    # Opens Streamlit at http://localhost:8501
 ```
+
+Three tabs: **Ask** (query with citations), **Graph** (interactive entity explorer with Plotly), **System** (health + stats).
+
+---
 
 ## Ingestion Pipeline
 
-The pipeline (`src/ingestion/pipeline.py`) runs four stages sequentially:
+Documents go through four stages before they're queryable:
 
-### Stage 1: Document Loading
+```mermaid
+graph LR
+    A["Load Files"] --> B["Chunk Text"]
+    B --> C["Generate Embeddings"]
+    B --> D["Extract Entities"]
+    C --> E[("ChromaDB")]
+    D --> F[("Neo4j")]
 
-`src/ingestion/loader.py` recursively walks a directory and loads files based on extension:
+    style A fill:#dbeafe,stroke:#3b82f6
+    style B fill:#dbeafe,stroke:#3b82f6
+    style C fill:#d1fae5,stroke:#10b981
+    style D fill:#fce7f3,stroke:#ec4899
+    style E fill:#d1fae5,stroke:#10b981,stroke-width:2px
+    style F fill:#fce7f3,stroke:#ec4899,stroke-width:2px
+```
+
+<details>
+<summary><b>Stage 1: Document Loading</b></summary>
+
+`src/ingestion/loader.py` recursively walks a directory and loads files by extension:
 
 | Format | Extension | Method |
-|---|---|---|
+|:---|:---|:---|
 | Plain text | `.txt` | UTF-8 read |
 | Markdown | `.md` | UTF-8 read |
 | PDF | `.pdf` | Page-by-page extraction via `pypdf`, joined with double newlines |
 
-Each loaded document carries metadata: `source` (file path), `type` (text/markdown/pdf), and `pages` (for PDFs).
+Each document carries metadata: `source` (file path), `type` (text/markdown/pdf), and `pages` (for PDFs).
 
-### Stage 2: Chunking
+</details>
+
+<details>
+<summary><b>Stage 2: Chunking</b></summary>
 
 `src/ingestion/chunker.py` provides two strategies:
 
-**Fixed-size chunking** — Splits text into character windows of `chunk_size` with `overlap` characters shared between consecutive chunks. Simple and predictable.
+**Fixed-size** — Character windows of `chunk_size` with `overlap` characters shared between consecutive chunks.
 
-**Recursive chunking** (default) — Attempts to split on the most meaningful boundary first, falling back to less meaningful ones:
-1. Paragraph breaks (`\n\n`)
-2. Line breaks (`\n`)
-3. Sentence boundaries (`. `)
-4. Word boundaries (` `)
+**Recursive** (default) — Splits on the most meaningful boundary first, falling back progressively:
 
-If the text fits within `chunk_size`, it becomes a single chunk. Otherwise, the algorithm splits on the best available separator, merges small fragments back together, and preserves `overlap` characters between chunks for context continuity.
+```
+Paragraph breaks (\n\n) → Line breaks (\n) → Sentences (. ) → Words ( )
+```
 
-Every chunk carries its source lineage (`source`, `chunk_index`, `strategy`).
+Small fragments get merged back together. Overlap characters are preserved between chunks for context continuity. Every chunk carries its source lineage (`source`, `chunk_index`, `strategy`).
 
-### Stage 3: Embedding and Vector Storage
+</details>
 
-`src/embeddings/provider.py` calls Ollama's embedding API for each chunk using `nomic-embed-text`. Embeddings are stored in ChromaDB (`src/vectorstore/chroma.py`) alongside the chunk text and metadata.
+<details>
+<summary><b>Stage 3: Embedding + Vector Storage</b></summary>
 
-ChromaDB is configured with:
-- **Cosine distance** metric (HNSW index with `hnsw:space = cosine`)
+`src/embeddings/provider.py` calls Ollama's embedding API using `nomic-embed-text`. Vectors are stored in ChromaDB with:
+
+- **Cosine distance** metric (HNSW index)
 - **Persistent storage** at `./chroma_data/`
-- **Upsert semantics** — re-ingesting the same document updates rather than duplicates (chunk IDs are deterministic SHA-1 hashes of source + index + content)
+- **Upsert semantics** — re-ingesting updates rather than duplicates (chunk IDs are deterministic SHA-1 hashes)
 
-### Stage 4: Knowledge Graph Extraction
+</details>
 
-`src/knowledge_graph/extractor.py` sends each document's text (first 3,000 characters) to the LLM with a structured extraction prompt. The LLM returns JSON with:
-- **Entities**: named concepts with category labels (Person, Organization, Policy, System, Technology, Concept, Process, Document)
-- **Relationships**: directed edges between entities (RELATES_TO, PART_OF, GOVERNS, USES, DEPENDS_ON, DEFINES, MENTIONS)
+<details>
+<summary><b>Stage 4: Knowledge Graph Extraction</b></summary>
 
-`src/knowledge_graph/neo4j_client.py` writes these into Neo4j using `MERGE` operations (idempotent — safe to re-run). A Document node is created for each source file and linked to its extracted entities via `MENTIONS` edges.
+`src/knowledge_graph/extractor.py` sends document text to the LLM with a structured extraction prompt. The LLM returns:
 
-The Neo4j client validates all labels and relationship types against allowlists before interpolating them into Cypher queries, preventing injection through LLM-generated content.
+- **Entities** with category labels: `Person` `Organization` `Policy` `System` `Technology` `Concept` `Process` `Document`
+- **Relationships** as directed edges: `RELATES_TO` `PART_OF` `GOVERNS` `USES` `DEPENDS_ON` `DEFINES` `MENTIONS`
 
-If Neo4j is unavailable, the pipeline logs a warning and completes without graph extraction.
+Written to Neo4j using idempotent `MERGE` operations. All labels and relationship types are validated against allowlists before Cypher interpolation — no injection through LLM output.
 
-## Query Modes
+> If Neo4j is unavailable, the pipeline logs a warning and completes without graph extraction. Everything else still works.
 
-### RAG Mode (`mode: "rag"`)
+</details>
 
-Single-pass retrieval-augmented generation:
-
-1. **Embed the query** — converts the question to a vector using `nomic-embed-text`
-2. **Vector search** — finds the top-k most similar chunks in ChromaDB by cosine similarity
-3. **Graph enrichment** (if Neo4j available) — identifies entities mentioned in the query, looks up their graph neighbors, and formats relationship context as natural language
-4. **Context assembly** — formats retrieved chunks with source labels (`[Source 1: path/to/doc (relevance: 0.847)]`) and appends graph context
-5. **Generation** — sends the assembled context + question to `llama3.2` with instructions to cite sources using `[Source N]` notation
-
-The response includes the answer, a list of sources with relevance scores, and any graph context used.
-
-### Agent Mode (`mode: "agent"`)
-
-Multi-step reasoning using a ReAct-style (Reason → Act → Observe) agent:
-
-1. **Planning** — The LLM decomposes the question into a sequence of tool-use steps (up to 8 steps max)
-2. **Execution** — Each step invokes one of the available tools:
-
-   | Tool | Description |
-   |---|---|
-   | `search_documents` | Vector + graph hybrid search, returns top-3 passages with scores |
-   | `query_knowledge_graph` | Looks up an entity in Neo4j and returns neighbors within 2 hops |
-   | `summarize` | Sends text to the LLM for concise summarization |
-   | `compare_documents` | Retrieves documents related to a comparison query, groups by source |
-
-3. **Synthesis** — All step observations are combined and sent to the LLM to produce a final, comprehensive answer
-
-The response includes the answer and the full reasoning trace (thought, tool, input, observation for each step).
-
-Agent mode is useful for questions that require:
-- Comparing information across multiple documents
-- Following chains of relationships in the knowledge graph
-- Summarizing and synthesizing information from several sources
+---
 
 ## API Reference
 
-Base URL: `http://localhost:8000`
+Base URL: `http://localhost:8000` &#8226; Swagger UI: `http://localhost:8000/docs`
 
-### `GET /health`
+<details>
+<summary><code>GET /health</code> — System health check</summary>
 
-Returns system health with ChromaDB document count and Neo4j connectivity status.
+Returns ChromaDB document count and Neo4j connectivity. Status is `"ok"` when both backends are reachable, `"degraded"` if either is down.
 
-**Response:**
 ```json
 {
   "status": "ok",
@@ -279,11 +295,10 @@ Returns system health with ChromaDB document count and Neo4j connectivity status
 }
 ```
 
-`status` is `"ok"` when both backends are reachable, `"degraded"` if either is down.
+</details>
 
-### `POST /ingest`
-
-Runs the ingestion pipeline on a directory.
+<details>
+<summary><code>POST /ingest</code> — Run ingestion pipeline</summary>
 
 **Request:**
 ```json
@@ -301,9 +316,10 @@ Runs the ingestion pipeline on a directory.
 }
 ```
 
-### `POST /query`
+</details>
 
-Asks a question against the ingested documents.
+<details>
+<summary><code>POST /query</code> — Ask a question</summary>
 
 **Request:**
 ```json
@@ -315,12 +331,12 @@ Asks a question against the ingested documents.
 ```
 
 | Field | Type | Default | Description |
-|---|---|---|---|
-| `question` | string | (required) | The question to ask (min 1 character) |
+|:---|:---|:---|:---|
+| `question` | string | *(required)* | The question to ask |
 | `mode` | `"rag"` \| `"agent"` | `"rag"` | Query strategy |
-| `top_k` | integer (1-20) | `5` | Number of chunks to retrieve |
+| `top_k` | int (1–20) | `5` | Number of chunks to retrieve |
 
-**Response (RAG mode):**
+**Response (RAG):**
 ```json
 {
   "answer": "According to the remote work policy [Source 1]...",
@@ -333,7 +349,7 @@ Asks a question against the ingested documents.
 }
 ```
 
-**Response (Agent mode):**
+**Response (Agent):**
 ```json
 {
   "answer": "Based on my research across multiple documents...",
@@ -351,13 +367,13 @@ Asks a question against the ingested documents.
 }
 ```
 
-### `GET /graph/entities`
+</details>
 
-Lists all entities in the knowledge graph.
+<details>
+<summary><code>GET /graph/entities</code> — List knowledge graph entities</summary>
 
-**Query parameters:** `limit` (default: 100)
+**Query params:** `limit` (default: 100)
 
-**Response:**
 ```json
 [
   {"name": "Data Security Policy", "labels": ["Policy"]},
@@ -365,13 +381,13 @@ Lists all entities in the knowledge graph.
 ]
 ```
 
-### `GET /graph/neighbors/{entity}`
+</details>
 
-Returns entities within N hops of the given entity.
+<details>
+<summary><code>GET /graph/neighbors/{entity}</code> — Entity neighborhood</summary>
 
-**Query parameters:** `max_hops` (default: 2)
+**Query params:** `max_hops` (default: 2)
 
-**Response:**
 ```json
 [
   {"name": "VPN", "labels": ["Technology"], "distance": 1},
@@ -379,13 +395,13 @@ Returns entities within N hops of the given entity.
 ]
 ```
 
-### `GET /graph/subgraph/{entity}`
+</details>
 
-Returns a full node-edge subgraph around an entity, suitable for graph visualization.
+<details>
+<summary><code>GET /graph/subgraph/{entity}</code> — Visual subgraph data</summary>
 
-**Query parameters:** `max_hops` (1-4, default: 2), `node_limit` (1-1000, default: 200), `edge_limit` (1-2000, default: 400)
+**Query params:** `max_hops` (1–4), `node_limit` (1–1000), `edge_limit` (1–2000)
 
-**Response:**
 ```json
 {
   "nodes": [
@@ -397,17 +413,43 @@ Returns a full node-edge subgraph around an entity, suitable for graph visualiza
 }
 ```
 
-## Dashboard UI
+</details>
 
-The Streamlit dashboard (`src/ui/dashboard.py`) provides three tabs:
+---
 
-**Ask tab** — Enter a question, select RAG or Agent mode, adjust top-k, and view the answer with source citations. Agent mode responses show an expandable reasoning trace for each step.
+## Configuration
 
-**Graph tab** — Load the entity list from Neo4j, select or type an entity name, configure hop distance and limits, then render an interactive Plotly network graph. Nodes are sized by degree and colored on a blue scale. Hover for entity details.
+All settings via environment variables or `.env` file — powered by Pydantic Settings in `src/config.py`.
 
-**System tab** — Check API health, view ChromaDB document count, Neo4j connection status, and preview the first 25 entities in the graph.
+<details>
+<summary><b>Full configuration reference</b></summary>
 
-Sidebar settings let you change the API base URL, default query mode, and default top-k.
+| Variable | Default | Description |
+|:---|:---|:---|
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API endpoint |
+| `OLLAMA_MODEL` | `llama3.2` | Generation + entity extraction model |
+| `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Embedding model |
+| `NEO4J_URI` | `bolt://localhost:7687` | Neo4j Bolt URI |
+| `NEO4J_USER` | `neo4j` | Neo4j username |
+| `NEO4J_PASSWORD` | `password` | Neo4j password |
+| `CHROMA_PERSIST_DIR` | `./chroma_data` | ChromaDB storage directory |
+| `CHROMA_COLLECTION` | `enterprise_docs` | ChromaDB collection name |
+| `CHUNK_SIZE` | `512` | Chunk size in characters |
+| `CHUNK_OVERLAP` | `64` | Overlap between chunks |
+| `DATA_DIR` | `./data/sample_docs` | Default ingestion directory |
+
+</details>
+
+Example `.env`:
+
+```env
+OLLAMA_MODEL=llama3.2
+NEO4J_PASSWORD=my_secure_password
+CHUNK_SIZE=1024
+CHUNK_OVERLAP=128
+```
+
+---
 
 ## Project Structure
 
@@ -424,8 +466,8 @@ enterprise-doc-intel/
 │   ├── vectorstore/
 │   │   └── chroma.py                 # ChromaDB persistence and search
 │   ├── knowledge_graph/
-│   │   ├── extractor.py              # LLM-based entity/relation extraction
-│   │   ├── neo4j_client.py           # Neo4j driver wrapper with Cypher safety
+│   │   ├── extractor.py              # LLM entity/relation extraction
+│   │   ├── neo4j_client.py           # Neo4j driver with Cypher safety
 │   │   └── query.py                  # Graph context retrieval for RAG
 │   ├── rag/
 │   │   ├── retriever.py              # Hybrid vector + graph retrieval
@@ -433,10 +475,10 @@ enterprise-doc-intel/
 │   │   └── generator.py              # LLM answer generation with citations
 │   ├── agents/
 │   │   ├── planner.py                # LLM query decomposition
-│   │   ├── tools.py                  # Callable agent tools (search, summarize, compare, graph)
+│   │   ├── tools.py                  # Agent tools (search, summarize, compare, graph)
 │   │   └── orchestrator.py           # ReAct execution loop and synthesis
 │   ├── api/
-│   │   ├── app.py                    # FastAPI application entry point
+│   │   ├── app.py                    # FastAPI entry point
 │   │   ├── models.py                 # Pydantic request/response schemas
 │   │   └── routes/
 │   │       ├── health.py             # GET /health
@@ -444,151 +486,163 @@ enterprise-doc-intel/
 │   │       ├── query.py              # POST /query
 │   │       └── graph.py              # GET /graph/*
 │   └── ui/
-│       └── dashboard.py              # Streamlit visualization dashboard
-├── tests/
-│   ├── test_loader.py                # Document loader unit tests
-│   ├── test_chunker.py               # Chunking strategy unit tests
-│   ├── test_api_models.py            # Pydantic model validation tests
-│   ├── test_neo4j_client_unit.py     # Neo4j client unit tests
-│   ├── test_retriever.py             # Retriever integration tests
-│   ├── test_knowledge_graph.py       # Knowledge graph integration tests
-│   └── test_agent.py                 # Agent orchestration tests
-├── data/
-│   └── sample_docs/                   # Sample enterprise documents
-│       ├── policies/                  # HR and security policies
-│       ├── reports/                   # Quarterly reports
-│       └── technical/                 # Architecture and API docs
-├── chroma_data/                       # ChromaDB persistent storage (gitignored)
-├── docker-compose.yml                 # Neo4j container definition
-├── pyproject.toml                     # Package definition and dependencies
-├── Makefile                           # Development shortcuts
-└── uv.lock                           # Dependency lock file
+│       └── dashboard.py              # Streamlit dashboard
+├── tests/                             # Unit + integration tests
+├── data/sample_docs/                  # Sample enterprise documents
+│   ├── policies/                      # data-security, leave, remote-work
+│   ├── reports/                       # q4-2024-summary
+│   └── technical/                     # api-docs, architecture-overview
+├── docker-compose.yml                 # Neo4j container
+├── pyproject.toml                     # Package + dependencies
+├── Makefile                           # Dev shortcuts
+└── uv.lock                           # Dependency lock
 ```
 
-## How Each Module Works
+---
 
-### Embeddings (`src/embeddings/provider.py`)
+## Deep Dive: Module Details
 
-Calls Ollama's `/api/embed` endpoint. Two functions:
-- `get_embeddings(texts)` — batch embedding for ingestion, iterates over texts one at a time
+<details>
+<summary><b>Embeddings</b> — <code>src/embeddings/provider.py</code></summary>
+
+Calls Ollama's `/api/embed` endpoint:
+- `get_embeddings(texts)` — batch embedding for ingestion (iterates one at a time)
 - `get_single_embedding(text)` — single embedding for query-time retrieval
 
-### Vector Store (`src/vectorstore/chroma.py`)
+</details>
 
-Wraps `chromadb.PersistentClient` with three operations:
+<details>
+<summary><b>Vector Store</b> — <code>src/vectorstore/chroma.py</code></summary>
+
+Wraps `chromadb.PersistentClient`:
 - `add()` — upserts documents with pre-computed embeddings
-- `search()` — top-k cosine similarity search, returns results with similarity scores (converts ChromaDB's distance to `1 - distance`)
+- `search()` — top-k cosine similarity, converts ChromaDB distance to similarity (`1 - distance`)
 - `reset()` — drops and recreates the collection
 
-### Knowledge Graph Client (`src/knowledge_graph/neo4j_client.py`)
+</details>
 
-Thin wrapper around the Neo4j Python driver. All Cypher identifiers (node labels, relationship types) are validated against allowlists before interpolation:
-- Allowed labels: Person, Organization, Policy, System, Technology, Concept, Process, Document
-- Allowed relationship types: RELATES_TO, PART_OF, GOVERNS, USES, DEPENDS_ON, DEFINES, MENTIONS
-- Unrecognized values fall back to `Concept` or `RELATES_TO`
+<details>
+<summary><b>Knowledge Graph Client</b> — <code>src/knowledge_graph/neo4j_client.py</code></summary>
 
-Key operations: `create_entity`, `create_relationship`, `get_neighbors`, `search_entities`, `get_all_entities`, `get_subgraph`.
+Neo4j driver wrapper with **Cypher injection protection**. All identifiers are validated against allowlists:
+- Labels: `Person` `Organization` `Policy` `System` `Technology` `Concept` `Process` `Document`
+- Relationships: `RELATES_TO` `PART_OF` `GOVERNS` `USES` `DEPENDS_ON` `DEFINES` `MENTIONS`
+- Unrecognized values fall back to `Concept` / `RELATES_TO`
 
-### Graph Context Retrieval (`src/knowledge_graph/query.py`)
+Key ops: `create_entity`, `create_relationship`, `get_neighbors`, `search_entities`, `get_all_entities`, `get_subgraph`
 
-Two-step process used during RAG queries:
-1. `extract_entities_from_query()` — case-insensitive keyword match of query text against all known entity names
-2. `get_graph_context()` — for each matched entity, finds neighbors within N hops and formats them as natural language context
+</details>
 
-### Hybrid Retriever (`src/rag/retriever.py`)
+<details>
+<summary><b>Graph Context Retrieval</b> — <code>src/knowledge_graph/query.py</code></summary>
+
+Two-step process for enriching RAG queries:
+1. **Entity extraction** — case-insensitive keyword match against all known entity names
+2. **Context building** — for each match, finds neighbors within N hops, formats as natural language
+
+</details>
+
+<details>
+<summary><b>Hybrid Retriever</b> — <code>src/rag/retriever.py</code></summary>
 
 Combines vector and graph search:
-1. Embeds the query and runs ChromaDB similarity search
-2. If Neo4j is available, extracts entities from the query and pulls graph context
-3. Returns both in a `RetrievalResult` dataclass
+1. Embed the query, run ChromaDB similarity search
+2. If Neo4j is available, extract entities and pull graph context
+3. Return both in a `RetrievalResult` — graph failures are caught and logged, never crash the query
 
-Graph search failures are caught and logged — the system continues with vector-only results.
+</details>
 
-### Context Builder (`src/rag/context_builder.py`)
+<details>
+<summary><b>Context Builder</b> — <code>src/rag/context_builder.py</code></summary>
 
-Formats retrieval results into a prompt with source attribution:
+Formats retrieval into a structured prompt:
 ```
-## Retrieved Documents
-
 [Source 1: path/to/doc.md (relevance: 0.847)]
 <chunk text>
 
-[Source 2: path/to/other.md (relevance: 0.793)]
-<chunk text>
-
-## Knowledge Graph Context:
-'Policy X' is related to: Entity A (Label), Entity B (Label)
+Knowledge Graph Context:
+'Policy X' is related to: Entity A, Entity B
 ```
 
-### Generator (`src/rag/generator.py`)
+</details>
 
-Sends the assembled context + question to Ollama with a system prompt that instructs the LLM to cite sources using `[Source N]` notation. Uses `temperature: 0.1` for focused, deterministic answers.
+<details>
+<summary><b>Generator</b> — <code>src/rag/generator.py</code></summary>
 
-### Agent Planner (`src/agents/planner.py`)
+Sends assembled context + question to Ollama. Instructs the LLM to cite sources using `[Source N]` notation. Uses `temperature: 0.1` for focused answers.
 
-Sends the user's question to the LLM along with available tool descriptions. The LLM returns a JSON plan:
-```json
-{"steps": [{"tool": "search_documents", "input": "...", "reason": "..."}]}
-```
+</details>
 
-Falls back to a single `search_documents` step if the LLM output can't be parsed.
+<details>
+<summary><b>Agent Planner</b> — <code>src/agents/planner.py</code></summary>
 
-### Agent Orchestrator (`src/agents/orchestrator.py`)
+Sends the question + tool descriptions to the LLM. Returns a JSON plan of steps. Falls back to a single `search_documents` step if parsing fails.
 
-Executes the plan step by step (max 8 steps), collects observations, then sends everything to the LLM for synthesis. Returns the final answer with the full reasoning trace.
+</details>
+
+<details>
+<summary><b>Agent Orchestrator</b> — <code>src/agents/orchestrator.py</code></summary>
+
+ReAct-style loop: executes the plan step by step (max 8), collects observations (capped at 2000 chars each), then sends everything to the LLM for final synthesis. Returns the answer + full reasoning trace.
+
+</details>
+
+---
 
 ## Testing
 
-Run the full test suite:
-
 ```bash
-make test
-# or
-pytest -v
+make test    # or: pytest -v
 ```
 
-Tests are configured with `pytest-asyncio` in auto mode. The test suite includes:
-- Unit tests for chunking logic, document loaders, and API model validation
-- Integration test stubs for the retriever, knowledge graph, and agent (these require live Ollama and Neo4j to fully exercise)
+| Test File | Coverage |
+|:---|:---|
+| `test_loader.py` | Document loading (txt, md, pdf) |
+| `test_chunker.py` | Fixed-size + recursive chunking logic |
+| `test_api_models.py` | Pydantic model validation |
+| `test_neo4j_client_unit.py` | Neo4j client operations |
+| `test_retriever.py` | Hybrid retrieval integration |
+| `test_knowledge_graph.py` | Graph extraction integration |
+| `test_agent.py` | Agent orchestration |
 
-## Sample Data
-
-The `data/sample_docs/` directory includes example enterprise documents organized by type:
-
-```
-sample_docs/
-├── policies/
-│   ├── data-security-policy.md
-│   ├── leave-policy.md
-│   └── remote-work-policy.md
-├── reports/
-│   └── q4-2024-summary.md
-└── technical/
-    ├── api-documentation.md
-    └── architecture-overview.md
-```
-
-These documents demonstrate the system's ability to handle different content types (policies, reports, technical docs) and to extract cross-cutting relationships between entities mentioned across documents.
+---
 
 ## Roadmap
 
+```mermaid
+timeline
+    title Project Phases
+    Phase I : RAG pipeline : Knowledge graph : Agent workflows : API + Dashboard
+    Phase II : Error handling : Test coverage : Retrieval quality : Evaluation discipline
+    Phase III : CI/CD : Observability : Production safeguards : Operational tooling
+```
+
 | Phase | Focus | Status |
-|---|---|---|
-| **Phase I** | From-scratch implementation of RAG + knowledge graph + agent workflows | Complete |
-| **Phase II** | System hardening, error handling, test coverage, retrieval quality controls | In progress |
-| **Phase III** | Production readiness — CI/CD, observability, operational safeguards | Planned |
+|:---|:---|:---:|
+| **I** | From-scratch RAG + KG + agents | &#9745; Complete |
+| **II** | Hardening, testing, quality controls | &#9744; In progress |
+| **III** | Production readiness, CI/CD, observability | &#9744; Planned |
 
-## Technology Stack
+---
 
-| Component | Technology | Role |
-|---|---|---|
-| Runtime | Python 3.11+ | Core language |
-| API framework | FastAPI + Uvicorn | HTTP service layer |
-| LLM inference | Ollama | Local generation and embeddings |
-| Vector database | ChromaDB | Persistent similarity search |
-| Graph database | Neo4j 5 Community | Entity-relationship storage and traversal |
-| PDF parsing | pypdf | PDF text extraction |
-| Dashboard | Streamlit | Interactive UI |
-| Graph visualization | Plotly + NetworkX | Node-edge rendering |
-| Schema validation | Pydantic | Request/response models and settings |
-| Package management | setuptools + uv | Build and dependency locking |
+## Tech Stack
+
+<table>
+<tr>
+<td align="center" width="14%"><b>Python 3.11+</b><br/><sub>Runtime</sub></td>
+<td align="center" width="14%"><b>FastAPI</b><br/><sub>API Layer</sub></td>
+<td align="center" width="14%"><b>Ollama</b><br/><sub>Local LLM</sub></td>
+<td align="center" width="14%"><b>ChromaDB</b><br/><sub>Vectors</sub></td>
+<td align="center" width="14%"><b>Neo4j</b><br/><sub>Graph DB</sub></td>
+<td align="center" width="14%"><b>Streamlit</b><br/><sub>Dashboard</sub></td>
+<td align="center" width="14%"><b>Plotly</b><br/><sub>Visualization</sub></td>
+</tr>
+</table>
+
+Also uses: `pypdf` (PDF parsing) &#8226; `NetworkX` (graph layout) &#8226; `Pydantic` (schemas) &#8226; `httpx` (HTTP client) &#8226; `uv` (dependency locking)
+
+---
+
+<div align="center">
+<sub>Built from first principles. No LangChain. No LlamaIndex. Just Python and clear data flow.</sub>
+</div>
