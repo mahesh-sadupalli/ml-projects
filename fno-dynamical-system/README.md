@@ -11,6 +11,8 @@
 
 Part of the [AI in the Sciences and Engineering](https://camlab-ethz.github.io/ai4s-course/) course at ETH Zurich.
 
+<img src="figures/08_ground_truth_3d_sample1.png" width="55%" alt="3D spatiotemporal surface of dynamical system"/>
+
 </div>
 
 ---
@@ -26,6 +28,16 @@ with boundary conditions $u(0,t) = u(1,t) = 0$ and initial condition $u(x,0) = u
 We don't know $\mathcal{D}$. We only have **snapshot data** — solutions sampled at $t \in \{0, 0.25, 0.50, 0.75, 1.0\}$ across 1024 trajectories. The goal: learn an operator that maps initial conditions to future states, **purely from data**.
 
 > This is the central promise of neural operators — replacing expensive numerical solvers with learned surrogates that are orders of magnitude faster at inference.
+
+<details>
+<summary><b>Dataset Samples</b> — click to expand</summary>
+<br/>
+<div align="center">
+<img src="figures/01_dataset_samples.png" width="90%" alt="Training dataset sample trajectories"/>
+</div>
+
+6 representative trajectories from the training set. Each curve shows the solution $u(x, t)$ at 5 time snapshots, revealing diverse wave propagation and diffusion patterns.
+</details>
 
 ---
 
@@ -151,6 +163,142 @@ graph LR
     style OUTPUT fill:#fd79a8,stroke:#e84393,color:#fff,rx:8
 ```
 
+**Model Configuration:**
+
+| Hyperparameter | Value |
+|:---|:---|
+| Fourier Modes | 16 |
+| Hidden Width | 64 |
+| Fourier Layers | 4 |
+| Parameters | 287K |
+| Optimizer | Adam + ReduceLROnPlateau |
+
+---
+
+## Results
+
+### Task 1: One-to-One Training (10 pts)
+
+Learn the direct mapping $u_0 \mapsto u(t=1.0)$ using 1024 training trajectories.
+
+<div align="center">
+<img src="figures/02_one2one_predictions.png" width="90%" alt="One-to-one predictions vs ground truth"/>
+</div>
+
+<div align="center">
+
+| Metric | Value |
+|:---|:---|
+| Training Epochs | 253 (early stopped) |
+| Final Train Loss | 1.52e-03 |
+| **Test Relative L² Error** | **0.1203** |
+
+</div>
+
+---
+
+### Task 2: Multi-Resolution Testing (10 pts)
+
+Test the same trained model (no retraining) on grids of different spatial resolution. This demonstrates FNO's core property — **resolution invariance**.
+
+<div align="center">
+<img src="figures/03_multi_resolution.png" width="90%" alt="Resolution invariance results"/>
+</div>
+
+<div align="center">
+
+| Resolution | Relative L² Error |
+|:---:|:---:|
+| 32 | 0.1332 |
+| 64 | 0.1492 |
+| 96 | 0.1277 |
+| **128** (train) | **0.1203** |
+
+</div>
+
+> Errors remain within a ~3% band across a 4x resolution range, confirming that spectral features transfer across discretizations.
+
+---
+
+### Task 3: All-to-All Time-Dependent Training (15 pts)
+
+Train a time-conditioned FNO using all 5 time snapshots. Input channels: $[u(t_i),\; t_i,\; t_j]$.
+
+<div align="center">
+<img src="figures/04_all2all_predictions.png" width="90%" alt="All2All predictions at multiple time steps"/>
+</div>
+
+<div align="center">
+<img src="figures/05_error_vs_time.png" width="55%" alt="Error growth over prediction horizon"/>
+</div>
+
+<div align="center">
+
+| Prediction Time | Relative L² Error |
+|:---:|:---:|
+| t = 0.25 | 0.0524 |
+| t = 0.50 | 0.0892 |
+| t = 0.75 | 0.1197 |
+| t = 1.00 | 0.1595 |
+
+</div>
+
+> Error grows approximately linearly with the prediction horizon — shorter-range predictions are significantly more accurate.
+
+---
+
+### Task 4: Fine-Tuning & Transfer Learning (15 + 10 bonus pts)
+
+Test the all2all model on a **shifted initial condition distribution** (zero-shot), then fine-tune with only 32 trajectories. Compare against training from scratch.
+
+<div align="center">
+<img src="figures/06_finetune_comparison.png" width="90%" alt="Fine-tuning comparison"/>
+</div>
+
+<div align="center">
+
+| Method | L² Error at t=1.0 | Improvement |
+|:---|:---:|:---:|
+| Zero-Shot (no adaptation) | 0.4025 | — |
+| **Fine-Tuned** (32 trajectories) | **0.2255** | **44% reduction** |
+| From Scratch (32 trajectories) | 0.2709 | 33% reduction |
+
+</div>
+
+> Fine-tuning outperforms training from scratch by ~17%, confirming that **transfer learning is successful** — pretrained spectral features generalize across distributions.
+
+---
+
+### 3D Spatiotemporal Visualization
+
+Full spatiotemporal evolution as 3D surfaces ($x$ vs $t$ vs $u$) — comparing ground truth, FNO prediction, and absolute error.
+
+<div align="center">
+<img src="figures/10_comparison_3d.png" width="95%" alt="3D comparison: truth vs prediction vs error"/>
+</div>
+
+<div align="center">
+<img src="figures/11_finetune_3d.png" width="95%" alt="3D transfer learning comparison"/>
+</div>
+
+<details>
+<summary><b>Spatiotemporal Heatmaps</b> — click to expand</summary>
+<br/>
+<div align="center">
+<img src="figures/12_heatmaps.png" width="90%" alt="Heatmaps x vs t"/>
+</div>
+
+Top-down view of the same data — error concentrates at later time steps and near boundary regions.
+</details>
+
+<details>
+<summary><b>Summary Dashboard</b> — click to expand</summary>
+<br/>
+<div align="center">
+<img src="figures/07_summary_dashboard.png" width="95%" alt="Results summary dashboard"/>
+</div>
+</details>
+
 ---
 
 ## Training Strategies
@@ -194,20 +342,10 @@ graph TD
 
 ---
 
-## Evaluation
-
-All models are evaluated using the **average relative L² error**:
-
-$$\text{err} = \frac{1}{N}\sum_{n=1}^{N} \frac{\left\|u_{\text{pred}}^{(n)} - u_{\text{true}}^{(n)}\right\|_2}{\left\|u_{\text{true}}^{(n)}\right\|_2}$$
-
-This metric normalizes by the magnitude of each solution, ensuring fair comparison across trajectories with different amplitudes.
-
----
-
 ## Key References
 
 | Paper | Contribution |
-|-------|-------------|
+|:---|:---|
 | [Li et al., 2021 — *Fourier Neural Operator for Parametric PDEs*](https://arxiv.org/abs/2010.08895) | Introduced FNO with spectral convolutions for resolution-invariant operator learning |
 | [Li et al., 2023 — *Fourier Neural Operator with Learned Deformations*](https://arxiv.org/abs/2207.05209) | Extended FNO with geometry-adaptive deformations |
 | [Kovachki et al., 2023 — *Neural Operator: Learning Maps Between Function Spaces*](https://arxiv.org/abs/2108.08481) | Unified theoretical framework for neural operators |
