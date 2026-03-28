@@ -1,0 +1,36 @@
+# Source code (internal use only)
+src/
+*.py
+!__init__.py
+
+# Data
+data/
+.cache/
+*.npz
+*.pkl
+*.tif
+*.geojson
+
+# Models
+models/saved_models/*.pt
+
+# Notebook
+*.ipynb
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/

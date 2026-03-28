@@ -1,0 +1,44 @@
+{
+  "depression": {
+    "multimodal_r2": 0.806,
+    "lightgbm_r2": 0.514,
+    "paper_target_r2": 0.5,
+    "improvement_pct": 61.2
+  },
+  "opioids": {
+    "multimodal_r2": 0.794,
+    "lightgbm_r2": 0.57,
+    "paper_target_r2": 0.6,
+    "improvement_pct": 32.3
+  },
+  "anxiety": {
+    "multimodal_r2": 0.786,
+    "lightgbm_r2": 0.461,
+    "paper_target_r2": 0.48,
+    "improvement_pct": 63.8
+  },
+  "hypertension": {
+    "multimodal_r2": 0.752,
+    "lightgbm_r2": 0.454,
+    "paper_target_r2": 0.44,
+    "improvement_pct": 70.9
+  },
+  "asthma": {
+    "multimodal_r2": 0.722,
+    "lightgbm_r2": 0.417,
+    "paper_target_r2": 0.43,
+    "improvement_pct": 67.9
+  },
+  "diabetes": {
+    "multimodal_r2": 0.654,
+    "lightgbm_r2": 0.209,
+    "paper_target_r2": 0.35,
+    "improvement_pct": 86.9
+  },
+  "total": {
+    "multimodal_r2": 0.646,
+    "lightgbm_r2": 0.331,
+    "paper_target_r2": 0.31,
+    "improvement_pct": 108.4
+  }
+}
