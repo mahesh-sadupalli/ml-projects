@@ -1,0 +1,7 @@
+bucket_definitions:
+  user_data:
+    parameters:
+      - SELECT request.user_id() AS user_id
+    data:
+      - SELECT id, title, content, category, tags::text as tags, location_lat, location_lng, location_name, ai_summary, ai_sentiment, ai_priority, status, media_urls::text as media_urls, created_at::text as created_at, updated_at::text as updated_at, owner_id FROM entries WHERE owner_id = bucket.user_id
+      - SELECT id, name, description, color, entry_count, created_at::text as created_at, owner_id FROM projects WHERE owner_id = bucket.user_id
