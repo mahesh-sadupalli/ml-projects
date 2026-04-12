@@ -30,7 +30,7 @@ def get_graph_context(query_entities: list[str], neo4j: Neo4jClient, max_hops: i
     if not context_parts:
         return ""
 
-    return "Knowledge Graph Context:\n" + "\n".join(context_parts)
+    return "\n".join(context_parts)
 
 
 def extract_entities_from_query(query: str, neo4j: Neo4jClient) -> list[str]:

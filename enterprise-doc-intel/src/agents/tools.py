@@ -75,9 +75,9 @@ def summarize(text: str) -> str:
         return f"Summarization unavailable: could not reach LLM."
 
 
-def compare_documents(query: str, *, chroma: ChromaStore) -> str:
+def compare_documents(query: str, *, chroma: ChromaStore, neo4j: Neo4jClient | None = None) -> str:
     """Search for documents related to a comparison query and present them side by side."""
-    result = retrieve(query, chroma, top_k=6)
+    result = retrieve(query, chroma, neo4j, top_k=6)
     if not result.vector_results:
         return "No documents found for comparison."
 
@@ -112,7 +112,7 @@ def build_tools(chroma: ChromaStore, neo4j: Neo4jClient | None = None) -> list[T
         Tool(
             name="compare_documents",
             description="Find and compare documents on a topic. Input: a comparison query.",
-            fn=lambda q: compare_documents(q, chroma=chroma),
+            fn=lambda q: compare_documents(q, chroma=chroma, neo4j=neo4j),
         ),
     ]
 

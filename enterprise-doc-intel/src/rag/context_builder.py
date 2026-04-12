@@ -24,7 +24,8 @@ def build_context(retrieval: RetrievalResult) -> str:
 
     # Knowledge graph context
     if retrieval.graph_context:
-        parts.append(f"## {retrieval.graph_context}")
+        parts.append("## Knowledge Graph Context\n")
+        parts.append(retrieval.graph_context)
 
     return "\n".join(parts)
 
