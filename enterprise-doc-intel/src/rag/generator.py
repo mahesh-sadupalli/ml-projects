@@ -40,13 +40,18 @@ def generate_answer(
 
     # 3. Generate
     prompt = build_prompt(question, context)
-    response = ollama_client.chat(
-        model=settings.ollama_model,
-        messages=[{"role": "user", "content": prompt}],
-        options={"temperature": 0.1},
-    )
-
-    answer = response["message"]["content"]
+    try:
+        response = ollama_client.chat(
+            model=settings.ollama_model,
+            messages=[{"role": "user", "content": prompt}],
+            options={"temperature": 0.1},
+        )
+        answer = response["message"]["content"]
+    except Exception as exc:
+        logger.error("Ollama generation failed: %s", exc)
+        raise RuntimeError(
+            f"LLM generation failed (model={settings.ollama_model}): {exc}"
+        ) from exc
 
     # Collect source metadata
     sources = [

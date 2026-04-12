@@ -41,13 +41,21 @@ def extract_entities_and_relations(text: str) -> dict:
     Returns a dict with "entities" and "relationships" lists.
     Falls back to empty lists on parse failure.
     """
+    if not text or not text.strip():
+        logger.debug("Skipping entity extraction for empty text")
+        return {"entities": [], "relationships": []}
+
     prompt = EXTRACTION_PROMPT.format(text=text[:3000])  # Limit input size
 
-    response = ollama_client.chat(
-        model=settings.ollama_model,
-        messages=[{"role": "user", "content": prompt}],
-        options={"temperature": 0.0},
-    )
+    try:
+        response = ollama_client.chat(
+            model=settings.ollama_model,
+            messages=[{"role": "user", "content": prompt}],
+            options={"temperature": 0.0},
+        )
+    except Exception as exc:
+        logger.error("Ollama entity extraction failed: %s", exc)
+        return {"entities": [], "relationships": []}
 
     content = response["message"]["content"].strip()
 

@@ -41,11 +41,15 @@ def decompose_query(question: str, tool_descriptions: str) -> list[dict]:
         tool_descriptions=tool_descriptions,
     )
 
-    response = ollama_client.chat(
-        model=settings.ollama_model,
-        messages=[{"role": "user", "content": prompt}],
-        options={"temperature": 0.0},
-    )
+    try:
+        response = ollama_client.chat(
+            model=settings.ollama_model,
+            messages=[{"role": "user", "content": prompt}],
+            options={"temperature": 0.0},
+        )
+    except Exception as exc:
+        logger.error("Ollama planner call failed: %s", exc)
+        return [{"tool": "search_documents", "input": question, "reason": "direct search (planner unavailable)"}]
 
     content = response["message"]["content"].strip()
 

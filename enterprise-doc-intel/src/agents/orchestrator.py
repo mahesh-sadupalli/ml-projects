@@ -81,8 +81,9 @@ def run_agent(
         else:
             try:
                 observation = tool.fn(tool_input)
-            except Exception as e:
-                observation = f"Error: {e}"
+            except Exception:
+                logger.exception("Tool %s failed", tool_name)
+                observation = f"Error: tool '{tool_name}' failed to execute."
 
         steps.append(
             AgentStep(
@@ -99,21 +100,23 @@ def run_agent(
         for i, s in enumerate(steps)
     )
 
-    response = ollama_client.chat(
-        model=settings.ollama_model,
-        messages=[
-            {
-                "role": "user",
-                "content": SYNTHESIS_PROMPT.format(
-                    question=question,
-                    observations=observations_text,
-                ),
-            }
-        ],
-        options={"temperature": 0.1},
-    )
+    try:
+        response = ollama_client.chat(
+            model=settings.ollama_model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": SYNTHESIS_PROMPT.format(
+                        question=question,
+                        observations=observations_text,
+                    ),
+                }
+            ],
+            options={"temperature": 0.1},
+        )
+        answer = response["message"]["content"]
+    except Exception as exc:
+        logger.error("Agent synthesis failed: %s", exc)
+        answer = "I collected research but could not generate a synthesis. Please try again."
 
-    return AgentResult(
-        answer=response["message"]["content"],
-        steps=steps,
-    )
+    return AgentResult(answer=answer, steps=steps)

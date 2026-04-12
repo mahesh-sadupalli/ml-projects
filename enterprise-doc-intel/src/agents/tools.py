@@ -61,14 +61,18 @@ def query_knowledge_graph(entity: str, *, neo4j: Neo4jClient) -> str:
 
 def summarize(text: str) -> str:
     """Summarize a long piece of text using the LLM."""
-    response = ollama_client.chat(
-        model=settings.ollama_model,
-        messages=[
-            {"role": "user", "content": f"Summarize the following text concisely:\n\n{text[:4000]}"},
-        ],
-        options={"temperature": 0.1},
-    )
-    return response["message"]["content"]
+    try:
+        response = ollama_client.chat(
+            model=settings.ollama_model,
+            messages=[
+                {"role": "user", "content": f"Summarize the following text concisely:\n\n{text[:4000]}"},
+            ],
+            options={"temperature": 0.1},
+        )
+        return response["message"]["content"]
+    except Exception as exc:
+        logger.error("Ollama summarize failed: %s", exc)
+        return f"Summarization unavailable: could not reach LLM."
 
 
 def compare_documents(query: str, *, chroma: ChromaStore) -> str:

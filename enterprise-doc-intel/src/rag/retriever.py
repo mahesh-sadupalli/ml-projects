@@ -47,6 +47,6 @@ def retrieve(
                 graph_context = get_graph_context(entities, neo4j)
                 logger.info("Graph context from %d entities", len(entities))
         except Exception:
-            logger.warning("Graph search failed, proceeding with vector results only")
+            logger.exception("Graph search failed, proceeding with vector results only")
 
     return RetrievalResult(vector_results=vector_results, graph_context=graph_context)
