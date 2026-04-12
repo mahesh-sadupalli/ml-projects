@@ -603,7 +603,11 @@ make test    # or: pytest -v
 | `test_neo4j_client_unit.py` | Neo4j client operations |
 | `test_retriever.py` | Hybrid retrieval integration |
 | `test_knowledge_graph.py` | Graph extraction integration |
-| `test_agent.py` | Agent orchestration |
+| `test_agent.py` | Agent planner, tools, orchestrator |
+| `test_context_builder.py` | RAG context assembly and prompting |
+| `test_generator.py` | LLM generation with error handling |
+| `test_embeddings.py` | Embedding provider with error paths |
+| `test_pipeline.py` | Ingestion pipeline end-to-end |
 
 ---
 
@@ -620,7 +624,7 @@ timeline
 | Phase | Focus | Status |
 |:---|:---|:---:|
 | **I** | From-scratch RAG + KG + agents | &#9745; Complete |
-| **II** | Hardening, testing, quality controls | &#9744; In progress |
+| **II** | Hardening, testing, quality controls | &#9745; Complete |
 | **III** | Production readiness, CI/CD, observability | &#9744; Planned |
 
 ---
