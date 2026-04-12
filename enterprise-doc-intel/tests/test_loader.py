@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.ingestion.loader import load_directory, load_markdown, load_text
+from src.ingestion.loader import Document, load_directory, load_markdown, load_pdf, load_text
 
 
 class TestLoaders:
@@ -39,3 +39,42 @@ class TestLoaders:
     def test_load_empty_directory(self, tmp_path: Path):
         docs = load_directory(tmp_path)
         assert docs == []
+
+    def test_load_pdf(self, tmp_path: Path):
+        """PDF loading via pypdf."""
+        from pypdf import PdfWriter
+
+        writer = PdfWriter()
+        writer.add_blank_page(width=200, height=200)
+        pdf_path = tmp_path / "test.pdf"
+        with open(pdf_path, "wb") as f:
+            writer.write(f)
+
+        doc = load_pdf(pdf_path)
+        assert doc.metadata["type"] == "pdf"
+        assert doc.metadata["pages"] == 1
+
+    def test_load_directory_skips_unreadable_files(self, tmp_path: Path):
+        """A file that fails to load should be skipped, not crash the pipeline."""
+        good = tmp_path / "good.txt"
+        good.write_text("good content")
+        bad = tmp_path / "bad.txt"
+        bad.write_text("content")
+        bad.chmod(0o000)  # make unreadable
+
+        docs = load_directory(tmp_path)
+        # Should get at least the good file; bad file is skipped
+        sources = [d.metadata["source"] for d in docs]
+        assert str(good) in sources
+
+        bad.chmod(0o644)  # restore for cleanup
+
+    def test_load_directory_with_subdirectories(self, tmp_path: Path):
+        """Should recursively find files in subdirectories."""
+        sub = tmp_path / "policies"
+        sub.mkdir()
+        (sub / "policy.md").write_text("Policy content")
+        (tmp_path / "readme.txt").write_text("Readme")
+
+        docs = load_directory(tmp_path)
+        assert len(docs) == 2
