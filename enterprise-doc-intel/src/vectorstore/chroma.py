@@ -59,9 +59,14 @@ class ChromaStore:
         where: dict | None = None,
     ) -> list[SearchResult]:
         """Search for similar documents by embedding vector."""
+        collection_size = self._collection.count()
+        if collection_size == 0:
+            return []
+        effective_k = min(top_k, collection_size)
+
         kwargs: dict = {
             "query_embeddings": [query_embedding],
-            "n_results": top_k,
+            "n_results": effective_k,
             "include": ["documents", "metadatas", "distances"],
         }
         if where:

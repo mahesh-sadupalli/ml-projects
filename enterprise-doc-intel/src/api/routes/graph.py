@@ -28,7 +28,7 @@ def list_entities(limit: int = 100) -> list[EntityResponse]:
 
 
 @router.get("/neighbors/{entity}", response_model=list[NeighborResponse])
-def get_neighbors(entity: str, max_hops: int = 2) -> list[NeighborResponse]:
+def get_neighbors(entity: str, max_hops: int = Query(default=2, ge=1, le=4)) -> list[NeighborResponse]:
     neo4j = _get_neo4j()
     try:
         neighbors = neo4j.get_neighbors(entity, max_hops=max_hops)
