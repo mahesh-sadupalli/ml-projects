@@ -67,15 +67,18 @@ def run_pipeline(data_dir: str | None = None) -> dict:
 
     # 4. Extract entities/relations and store in Neo4j
     entity_count = 0
+    neo4j = None
     try:
         neo4j = Neo4jClient()
         for doc in documents:
             count = extract_and_store(doc.content, doc.metadata, neo4j)
             entity_count += count
-        neo4j.close()
         logger.info("Extracted %d entities into Neo4j", entity_count)
     except Exception:
         logger.exception("Knowledge graph extraction failed (Neo4j may not be running)")
+    finally:
+        if neo4j is not None:
+            neo4j.close()
 
     summary = {
         "documents": len(documents),
