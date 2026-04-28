@@ -2,6 +2,7 @@
 src/
 *.py
 !__init__.py
+!dashboard/*.py
 
 # Data
 data/
