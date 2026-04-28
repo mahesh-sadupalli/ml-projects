@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from pyproj import Transformer
 import numpy as np
 from pathlib import Path
 
@@ -92,17 +91,6 @@ def load_regions() -> pd.DataFrame:
     return pd.read_csv(DASHBOARD_DIR / "regions_mapping.csv")
 
 
-@st.cache_data(show_spinner="Converting coordinates...")
-def add_latlon(df: pd.DataFrame) -> pd.DataFrame:
-    """Convert British National Grid to WGS84 lat/lon."""
-    transformer = Transformer.from_crs("EPSG:27700", "EPSG:4326", always_xy=True)
-    lon, lat = transformer.transform(df["centroid_x"].values, df["centroid_y"].values)
-    df = df.copy()
-    df["lat"] = lat
-    df["lon"] = lon
-    return df
-
-
 @st.cache_data(show_spinner="Preparing dashboard data...")
 def prepare_data(year: int):
     df = load_spatial_data(year)
@@ -115,7 +103,6 @@ def prepare_data(year: int):
     )
     df = df.rename(columns={"RGN22NM": "Region"})
     df = df.drop(columns=["LSOA21CD"], errors="ignore")
-    df = add_latlon(df)
     return df
 
 
