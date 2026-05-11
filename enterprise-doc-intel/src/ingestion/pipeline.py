@@ -67,6 +67,7 @@ def run_pipeline(data_dir: str | None = None) -> dict:
 
     # 4. Extract entities/relations and store in Neo4j
     entity_count = 0
+    kg_error: str | None = None
     neo4j = None
     try:
         neo4j = Neo4jClient()
@@ -74,17 +75,20 @@ def run_pipeline(data_dir: str | None = None) -> dict:
             count = extract_and_store(doc.content, doc.metadata, neo4j)
             entity_count += count
         logger.info("Extracted %d entities into Neo4j", entity_count)
-    except Exception:
+    except Exception as exc:
+        kg_error = str(exc)
         logger.exception("Knowledge graph extraction failed (Neo4j may not be running)")
     finally:
         if neo4j is not None:
             neo4j.close()
 
-    summary = {
+    summary: dict = {
         "documents": len(documents),
         "chunks": len(all_chunks),
         "entities": entity_count,
     }
+    if kg_error is not None:
+        summary["kg_warning"] = f"Knowledge graph extraction failed: {kg_error}"
     logger.info("Pipeline complete: %s", summary)
     return summary
 

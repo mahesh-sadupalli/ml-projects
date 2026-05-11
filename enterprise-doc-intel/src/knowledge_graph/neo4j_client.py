@@ -56,11 +56,14 @@ class Neo4jClient:
             return [record.data() for record in result]
 
     def create_entity(self, label: str, name: str, properties: dict | None = None) -> None:
-        """Create or merge an entity node."""
+        """Create or merge an entity node. Skips empty names."""
+        if not name or not name.strip():
+            logger.debug("Skipping entity creation for empty name")
+            return
         safe_label = _safe_identifier(label, fallback="Concept", allowed=_ALLOWED_LABELS)
         props = properties or {}
         cypher = f"MERGE (e:{safe_label} {{name: $name}}) SET e += $props"
-        self.run_query(cypher, {"name": name, "props": props})
+        self.run_query(cypher, {"name": name.strip(), "props": props})
 
     def create_relationship(
         self,
