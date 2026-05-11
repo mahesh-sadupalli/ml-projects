@@ -11,7 +11,7 @@ from src.knowledge_graph.query import extract_entities_from_query, get_graph_con
 # --- Extractor tests ---
 
 
-@patch("src.knowledge_graph.extractor.ollama_client")
+@patch("src.knowledge_graph.extractor._client")
 def test_extract_entities_parses_valid_json(mock_ollama):
     mock_ollama.chat.return_value = {
         "message": {
@@ -25,7 +25,7 @@ def test_extract_entities_parses_valid_json(mock_ollama):
     assert result["entities"][0]["name"] == "VPN"
 
 
-@patch("src.knowledge_graph.extractor.ollama_client")
+@patch("src.knowledge_graph.extractor._client")
 def test_extract_entities_handles_markdown_wrapped_json(mock_ollama):
     mock_ollama.chat.return_value = {
         "message": {
@@ -38,7 +38,7 @@ def test_extract_entities_handles_markdown_wrapped_json(mock_ollama):
     assert len(result["entities"]) == 1
 
 
-@patch("src.knowledge_graph.extractor.ollama_client")
+@patch("src.knowledge_graph.extractor._client")
 def test_extract_entities_returns_empty_on_bad_json(mock_ollama):
     mock_ollama.chat.return_value = {"message": {"content": "Sorry, I cannot extract entities."}}
 
@@ -55,7 +55,7 @@ def test_extract_entities_skips_empty_text():
     assert result == {"entities": [], "relationships": []}
 
 
-@patch("src.knowledge_graph.extractor.ollama_client")
+@patch("src.knowledge_graph.extractor._client")
 def test_extract_entities_handles_ollama_failure(mock_ollama):
     mock_ollama.chat.side_effect = ConnectionError("Ollama unreachable")
 

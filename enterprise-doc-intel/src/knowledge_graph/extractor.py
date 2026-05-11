@@ -5,9 +5,11 @@ from __future__ import annotations
 import json
 import logging
 
-import ollama as ollama_client
+from ollama import Client
 
 from src.config import settings
+
+_client = Client(host=settings.ollama_base_url, timeout=settings.ollama_timeout)
 from src.knowledge_graph.neo4j_client import Neo4jClient
 
 logger = logging.getLogger(__name__)
@@ -48,7 +50,7 @@ def extract_entities_and_relations(text: str) -> dict:
     prompt = EXTRACTION_PROMPT.format(text=text[:3000])  # Limit input size
 
     try:
-        response = ollama_client.chat(
+        response = _client.chat(
             model=settings.ollama_model,
             messages=[{"role": "user", "content": prompt}],
             options={"temperature": 0.0},

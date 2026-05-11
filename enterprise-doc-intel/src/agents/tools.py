@@ -6,9 +6,11 @@ import logging
 from dataclasses import dataclass
 from typing import Callable
 
-import ollama as ollama_client
+from ollama import Client
 
 from src.config import settings
+
+_client = Client(host=settings.ollama_base_url, timeout=settings.ollama_timeout)
 from src.knowledge_graph.neo4j_client import Neo4jClient
 from src.rag.retriever import retrieve
 from src.vectorstore.chroma import ChromaStore
@@ -62,7 +64,7 @@ def query_knowledge_graph(entity: str, *, neo4j: Neo4jClient) -> str:
 def summarize(text: str) -> str:
     """Summarize a long piece of text using the LLM."""
     try:
-        response = ollama_client.chat(
+        response = _client.chat(
             model=settings.ollama_model,
             messages=[
                 {"role": "user", "content": f"Summarize the following text concisely:\n\n{text[:4000]}"},

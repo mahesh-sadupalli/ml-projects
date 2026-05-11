@@ -5,9 +5,11 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
-import ollama as ollama_client
+from ollama import Client
 
 from src.config import settings
+
+_client = Client(host=settings.ollama_base_url, timeout=settings.ollama_timeout)
 from src.knowledge_graph.neo4j_client import Neo4jClient
 from src.rag.context_builder import build_context, build_prompt
 from src.rag.retriever import retrieve
@@ -41,7 +43,7 @@ def generate_answer(
     # 3. Generate
     prompt = build_prompt(question, context)
     try:
-        response = ollama_client.chat(
+        response = _client.chat(
             model=settings.ollama_model,
             messages=[{"role": "user", "content": prompt}],
             options={"temperature": 0.1},

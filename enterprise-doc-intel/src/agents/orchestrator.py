@@ -5,12 +5,14 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
-import ollama as ollama_client
+from ollama import Client
 
 from src.agents.planner import decompose_query
 from src.agents.tools import Tool, build_tools
 from src.config import settings
 from src.knowledge_graph.neo4j_client import Neo4jClient
+
+_client = Client(host=settings.ollama_base_url, timeout=settings.ollama_timeout)
 from src.vectorstore.chroma import ChromaStore
 
 logger = logging.getLogger(__name__)
@@ -101,7 +103,7 @@ def run_agent(
     )
 
     try:
-        response = ollama_client.chat(
+        response = _client.chat(
             model=settings.ollama_model,
             messages=[
                 {

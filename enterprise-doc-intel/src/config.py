@@ -6,11 +6,12 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
     ollama_embed_model: str = "nomic-embed-text"
+    ollama_timeout: int = 120  # seconds per LLM/embedding call
 
     # Neo4j
     neo4j_uri: str = "bolt://localhost:7687"
     neo4j_user: str = "neo4j"
-    neo4j_password: str = "password"
+    neo4j_password: str = ""  # must be set via .env or environment
 
     # ChromaDB
     chroma_persist_dir: str = "./chroma_data"
@@ -20,6 +21,9 @@ class Settings(BaseSettings):
     chunk_size: int = 512
     chunk_overlap: int = 64
     data_dir: str = "./data/sample_docs"
+
+    # Context limits
+    max_context_chars: int = 8000  # cap assembled context sent to LLM
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

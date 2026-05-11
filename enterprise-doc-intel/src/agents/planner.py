@@ -5,9 +5,11 @@ from __future__ import annotations
 import json
 import logging
 
-import ollama as ollama_client
+from ollama import Client
 
 from src.config import settings
+
+_client = Client(host=settings.ollama_base_url, timeout=settings.ollama_timeout)
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +44,7 @@ def decompose_query(question: str, tool_descriptions: str) -> list[dict]:
     )
 
     try:
-        response = ollama_client.chat(
+        response = _client.chat(
             model=settings.ollama_model,
             messages=[{"role": "user", "content": prompt}],
             options={"temperature": 0.0},

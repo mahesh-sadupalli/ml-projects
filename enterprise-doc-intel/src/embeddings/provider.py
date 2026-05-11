@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import logging
 
-import ollama as ollama_client
+from ollama import Client
 
 from src.config import settings
 
 logger = logging.getLogger(__name__)
+
+_client = Client(host=settings.ollama_base_url, timeout=settings.ollama_timeout)
 
 
 class EmbeddingError(RuntimeError):
@@ -25,7 +27,7 @@ def get_embeddings(texts: list[str]) -> list[list[float]]:
 
     for text in texts:
         try:
-            response = ollama_client.embed(
+            response = _client.embed(
                 model=settings.ollama_embed_model,
                 input=text,
             )
@@ -42,7 +44,7 @@ def get_embeddings(texts: list[str]) -> list[list[float]]:
 def get_single_embedding(text: str) -> list[float]:
     """Generate an embedding for a single text. Raises EmbeddingError on failure."""
     try:
-        response = ollama_client.embed(
+        response = _client.embed(
             model=settings.ollama_embed_model,
             input=text,
         )

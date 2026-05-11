@@ -18,7 +18,7 @@ def _make_retrieval():
     )
 
 
-@patch("src.rag.generator.ollama_client")
+@patch("src.rag.generator._client")
 @patch("src.rag.generator.retrieve", return_value=_make_retrieval())
 def test_generate_answer_returns_result(mock_retrieve, mock_ollama):
     mock_ollama.chat.return_value = {"message": {"content": "The answer is 42."}}
@@ -31,7 +31,7 @@ def test_generate_answer_returns_result(mock_retrieve, mock_ollama):
     assert result.sources[0]["source"] == "doc.md"
 
 
-@patch("src.rag.generator.ollama_client")
+@patch("src.rag.generator._client")
 @patch("src.rag.generator.retrieve", return_value=_make_retrieval())
 def test_generate_answer_raises_on_ollama_failure(mock_retrieve, mock_ollama):
     mock_ollama.chat.side_effect = ConnectionError("down")

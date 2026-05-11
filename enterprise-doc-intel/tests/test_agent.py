@@ -17,7 +17,7 @@ def _make_search_result(text: str = "chunk", source: str = "doc.md", score: floa
 # --- Planner tests ---
 
 
-@patch("src.agents.planner.ollama_client")
+@patch("src.agents.planner._client")
 def test_decompose_query_parses_valid_plan(mock_ollama):
     mock_ollama.chat.return_value = {
         "message": {
@@ -31,7 +31,7 @@ def test_decompose_query_parses_valid_plan(mock_ollama):
     assert steps[0]["tool"] == "search_documents"
 
 
-@patch("src.agents.planner.ollama_client")
+@patch("src.agents.planner._client")
 def test_decompose_query_falls_back_on_bad_json(mock_ollama):
     mock_ollama.chat.return_value = {"message": {"content": "Not valid json at all"}}
 
@@ -41,7 +41,7 @@ def test_decompose_query_falls_back_on_bad_json(mock_ollama):
     assert steps[0]["tool"] == "search_documents"
 
 
-@patch("src.agents.planner.ollama_client")
+@patch("src.agents.planner._client")
 def test_decompose_query_falls_back_on_ollama_failure(mock_ollama):
     mock_ollama.chat.side_effect = ConnectionError("unreachable")
 
@@ -79,7 +79,7 @@ def test_search_documents_returns_message_on_no_results():
     assert "No relevant documents found" in result
 
 
-@patch("src.agents.tools.ollama_client")
+@patch("src.agents.tools._client")
 def test_summarize_returns_llm_output(mock_ollama):
     mock_ollama.chat.return_value = {"message": {"content": "Brief summary."}}
 
@@ -88,7 +88,7 @@ def test_summarize_returns_llm_output(mock_ollama):
     assert result == "Brief summary."
 
 
-@patch("src.agents.tools.ollama_client")
+@patch("src.agents.tools._client")
 def test_summarize_handles_ollama_failure(mock_ollama):
     mock_ollama.chat.side_effect = ConnectionError("down")
 
@@ -129,7 +129,7 @@ def test_build_tools_with_neo4j():
 # --- Orchestrator tests ---
 
 
-@patch("src.agents.orchestrator.ollama_client")
+@patch("src.agents.orchestrator._client")
 @patch("src.agents.orchestrator.decompose_query")
 def test_run_agent_returns_answer_with_steps(mock_decompose, mock_ollama):
     mock_decompose.return_value = [
@@ -151,7 +151,7 @@ def test_run_agent_returns_answer_with_steps(mock_decompose, mock_ollama):
     assert result.steps[0].tool == "search_documents"
 
 
-@patch("src.agents.orchestrator.ollama_client")
+@patch("src.agents.orchestrator._client")
 @patch("src.agents.orchestrator.decompose_query")
 def test_run_agent_handles_unknown_tool(mock_decompose, mock_ollama):
     mock_decompose.return_value = [
@@ -164,7 +164,7 @@ def test_run_agent_handles_unknown_tool(mock_decompose, mock_ollama):
     assert "Unknown tool" in result.steps[0].observation
 
 
-@patch("src.agents.orchestrator.ollama_client")
+@patch("src.agents.orchestrator._client")
 @patch("src.agents.orchestrator.decompose_query")
 def test_run_agent_synthesis_failure_returns_fallback(mock_decompose, mock_ollama):
     mock_decompose.return_value = [
