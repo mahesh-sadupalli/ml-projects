@@ -29,6 +29,15 @@ Return ONLY valid JSON (no markdown, no explanation):
 
 If the question is simple and can be answered with a single search, use just one step.
 
+Example 1 — simple question:
+Question: "What is the data security policy?"
+{{"steps": [{{"tool": "search_documents", "input": "data security policy", "reason": "find the policy document"}}]}}
+
+Example 2 — comparison question:
+Question: "Compare the remote work policy with the data security policy on VPN requirements"
+{{"steps": [{{"tool": "search_documents", "input": "remote work policy VPN requirements", "reason": "find VPN info in remote work policy"}}, {{"tool": "search_documents", "input": "data security policy VPN requirements", "reason": "find VPN info in data security policy"}}, {{"tool": "compare_documents", "input": "VPN requirements remote work vs data security", "reason": "compare findings side by side"}}]}}
+
+Now decompose this question:
 Question: {question}
 """
 
