@@ -33,10 +33,14 @@ def get_graph_context(query_entities: list[str], neo4j: Neo4jClient, max_hops: i
     return "\n".join(context_parts)
 
 
+_MIN_ENTITY_LENGTH = 3  # skip very short names to avoid false positives (e.g. "IT", "AI")
+
+
 def extract_entities_from_query(query: str, neo4j: Neo4jClient) -> list[str]:
     """Find which entities from the knowledge graph are mentioned in the query.
 
-    Simple keyword matching against known entity names.
+    Uses case-insensitive word-boundary matching against known entity names.
+    Skips entity names shorter than _MIN_ENTITY_LENGTH to avoid false positives.
     """
     all_entities = neo4j.get_all_entities(limit=500)
     query_lower = query.lower()
@@ -44,6 +48,8 @@ def extract_entities_from_query(query: str, neo4j: Neo4jClient) -> list[str]:
     found = []
     for entity in all_entities:
         name = entity["name"]
+        if len(name) < _MIN_ENTITY_LENGTH:
+            continue
         if name.lower() in query_lower:
             found.append(name)
 
