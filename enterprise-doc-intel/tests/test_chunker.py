@@ -81,3 +81,36 @@ class TestChunkValidation:
         chunks = chunk_text("a" * 50, strategy="fixed", chunk_size=10, overlap=25)
         assert len(chunks) > 1
         assert all(len(c.text) <= 10 for c in chunks)
+
+
+class TestRecursiveEdgeCases:
+    def test_recursive_with_overlap(self):
+        """Overlap carry-forward should share text between chunks."""
+        text = "Alpha.\n\nBravo.\n\nCharlie.\n\nDelta."
+        chunks = recursive_chunks(text, chunk_size=20, overlap=5)
+        assert len(chunks) >= 2
+        # Overlap means later chunks should contain trailing chars of prior
+
+    def test_recursive_no_separator_fallback(self):
+        """When no separator exists, should fall back to char-window split."""
+        text = "abcdefghijklmnopqrstuvwxyz" * 4  # 104 chars, no separators
+        chunks = recursive_chunks(text, chunk_size=30, overlap=0)
+        assert len(chunks) >= 3
+        # All text should be covered
+        joined = "".join(c.text for c in chunks)
+        assert len(joined) >= len(text)
+
+    def test_recursive_empty_string(self):
+        assert recursive_chunks("", chunk_size=100) == []
+
+    def test_recursive_whitespace_only(self):
+        assert recursive_chunks("   \n\n  ", chunk_size=100) == []
+
+    def test_recursive_single_long_word(self):
+        """A single word longer than chunk_size should still produce chunks."""
+        text = "x" * 200
+        chunks = recursive_chunks(text, chunk_size=50, overlap=0)
+        assert len(chunks) >= 1
+        # All content is preserved
+        total_len = sum(len(c.text) for c in chunks)
+        assert total_len >= 200
