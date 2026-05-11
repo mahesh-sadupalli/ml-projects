@@ -21,14 +21,18 @@ MAX_STEPS = 8
 
 SYNTHESIS_PROMPT = """\
 You are an intelligent document assistant. Based on the observations collected during research,
-provide a comprehensive answer to the user's question. Cite sources where applicable.
+provide a comprehensive answer to the user's question.
+
+IMPORTANT: Cite sources using the format [Source: filename] based on the file paths shown in
+the observations below. If an observation mentions a file path like (policies/remote-work-policy.md),
+cite it as [Source: remote-work-policy.md]. Only cite sources that appear in the observations.
 
 Question: {question}
 
 Research steps and observations:
 {observations}
 
-Provide a clear, well-structured answer:"""
+Provide a clear, well-structured answer with citations:"""
 
 
 @dataclass

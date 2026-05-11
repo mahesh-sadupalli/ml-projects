@@ -108,8 +108,8 @@ def build_tools(chroma: ChromaStore, neo4j: Neo4jClient | None = None) -> list[T
         ),
         Tool(
             name="summarize",
-            description="Summarize a long piece of text. Input: the text to summarize.",
-            fn=summarize,
+            description="Summarize a topic by first searching for it, then condensing the results. Input: a search query describing what to summarize.",
+            fn=lambda q: summarize(search_documents(q, chroma=chroma, neo4j=neo4j)),
         ),
         Tool(
             name="compare_documents",
